@@ -22,13 +22,13 @@ public:
 	void new_child(std::string _behavior, std::string _response);
 	void new_child(node_class &_parent, std::string _behavior, std::string _response);
 	
-	/// Breath first search
+	/// Depth first search
 	node_class* depth_search(std::string search);
 	node_class* depth_search(std::string search, node_class* current_node);
 
 	/*
-	/// Depth first search
-	node_class depth_search(std::string search);
+	/// Breadth first search
+	node_class breadth_search(std::string search);
 	
 	/// returns string from the print functions
 	std::string get_print ();

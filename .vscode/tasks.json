@@ -1,0 +1,9 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "g++",
+    "isShellCommand": true,
+    "args": ["-g", "-Wall", "-o", "assignment1", "tree_project/main.cpp", "tree_project/tree_class.cpp", "tree_project/node_class.cpp"],
+    "showOutput": "always"
+}

@@ -28,7 +28,7 @@ void tree_class::new_child(std::string _behavior, std::string _response){
 	new_child(*root, _behavior, _response);
 }
 
-/// Breath first search
+/// Depth first search
 node_class* tree_class::depth_search(std::string search, node_class* current_node){
 	if(current_node->get_behavior() == search){
 		return current_node;
@@ -56,8 +56,8 @@ node_class* tree_class::depth_search(std::string search){
 }
 
 /*
-/// Depth first search
-node_class tree_class::depth_search(str::string search){
+/// Breadth first search
+node_class tree_class::breadth_search(str::string search){
 	
 }
 

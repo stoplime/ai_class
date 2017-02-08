@@ -17,15 +17,16 @@ node_class* tree_class::get_root(){
 }
 
 /// Insert new child
-void tree_class::new_child(node_class &_parent, std::string _behavior, std::string _response){
+node_class* tree_class::new_child(node_class &_parent, std::string _behavior, std::string _response){
 	node_class* new_node = new node_class();
 	new_node->set_behavior(_behavior);
 	new_node->set_response(_response);
 	new_node->set_parent(_parent);
 	_parent.insert_child(*new_node);
+	return new_node;
 }
-void tree_class::new_child(std::string _behavior, std::string _response){
-	new_child(*root, _behavior, _response);
+node_class* tree_class::new_child(std::string _behavior, std::string _response){
+	return new_child(*root, _behavior, _response);
 }
 
 /// Depth first search

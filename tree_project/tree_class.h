@@ -19,8 +19,8 @@ public:
 	node_class* get_root();
 	
 	/// Insert new child
-	void new_child(std::string _behavior, std::string _response);
-	void new_child(node_class &_parent, std::string _behavior, std::string _response);
+	node_class* new_child(std::string _behavior, std::string _response);
+	node_class* new_child(node_class &_parent, std::string _behavior, std::string _response);
 	
 	/// Depth first search
 	node_class* depth_search(std::string search);

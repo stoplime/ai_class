@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "g++",
     "isShellCommand": true,
-    "args": ["-g", "-Wall", "-o", "assignment1", "tree_project/main.cpp", "tree_project/tree_class.cpp", "tree_project/node_class.cpp"],
+    "args": ["-g", "-Wall", "-o", "assignment1", "tree_project/main.cpp", "tree_project/xml_parse.cpp", "tree_project/tree_class.cpp", "tree_project/node_class.cpp"],
     "showOutput": "always"
 }

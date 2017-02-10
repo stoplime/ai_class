@@ -1,4 +1,4 @@
-//g++ -g -Wall -o assignment1 main.cpp tree_class.cpp node_class.cpp
+//g++ -g -Wall -o assignment1 main.cpp xml_parse.cpp tree_class.cpp node_class.cpp
 
 #include "tree_class.h"
 #include "xml_parse.h"

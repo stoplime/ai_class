@@ -41,22 +41,19 @@ int main()
             }
         }
         samples.push_back(temp_sample);
-        
+        samples[i].value = to_int(samples[i].code);
+        samples[i].eval = evaluate(samples[i].value);
     }
-
     // show results
     show_samples(samples);
-    for(unsigned int i=0; i < samples.size(); i++)
-    {
-        cout << to_int(samples[i].code) << endl;
-    }    
+     
 }
 
 void show_samples(vector<sample> sample_in)
 {
     for(unsigned int i=0; i < sample_in.size(); i++)
     {
-        cout <<  "Sample " << i << " : " << sample_in[i].code << endl;
+        cout <<  "Sample " << i << ": " << sample_in[i].code << "= " << sample_in[i].value << " =>\t" << sample_in[i].eval << endl;
     }
 }
 
@@ -69,4 +66,9 @@ int to_int(string sample_in)
         value += (pow(2,power++) * (sample_in[i] - '0'));
     }
     return value;
+}
+
+int evaluate(int value_in)
+{
+    return pow(value_in, 2);
 }

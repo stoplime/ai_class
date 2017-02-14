@@ -19,4 +19,6 @@ void show_samples(vector<sample> sample_in);
 
 int to_int(string sample_in);
 
+int evaluate(int value_in);
+
 #endif

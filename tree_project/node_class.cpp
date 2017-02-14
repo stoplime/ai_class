@@ -44,6 +44,16 @@ void node_class::insert_child(node_class &child){
 	children.push_back(&child);
 }
 
+/// create new child node
+node_class* node_class::new_child(node_class &_parent, std::string _behavior, std::string _response){
+	node_class* new_node = new node_class();
+	new_node->set_behavior(_behavior);
+	new_node->set_response(_response);
+	new_node->set_parent(_parent);
+	_parent.insert_child(*new_node);
+	return new_node;
+}
+
 /// returns the string of a print function
 std::string node_class::get_print (){
 	if (behavior != ""){

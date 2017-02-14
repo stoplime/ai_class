@@ -39,6 +39,9 @@ public:
 	
 	/// Insert child
 	void insert_child(node_class &child);
+
+	/// create new child node
+	node_class* new_child(node_class &_parent, std::string _behavior, std::string _response);
 	
 	/// returns the string of a print function
 	std::string get_print ();

@@ -2,7 +2,6 @@
 #define _TREE_CLASS_H_
 
 #include <iostream>
-#include <vector>
 #include "node_class.h"
 
 class tree_class

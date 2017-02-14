@@ -9,7 +9,13 @@
 
 using namespace std;
 
-void show_samples(vector<string> sample_in);
+struct sample{
+    string code;
+    int value;
+    int eval;
+};
+
+void show_samples(vector<sample> sample_in);
 
 int to_int(string sample_in);
 

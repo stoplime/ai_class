@@ -15,11 +15,13 @@ generalize the function f(x)=x^2
 
 */
 
-int candidates = 6;
-int candidate_size = 5;
+int run = 0;
+
+int candidates = 8;
+int candidate_size = 16;
 float keep = 0.5;
 float mutation_rate = 0.2;
-int epoch = 10;
+int epoch = 100;
 
 sample best;
 
@@ -57,43 +59,60 @@ int main()
         samples[i].eval = evaluate(samples[i].value);
     }
     // show results
+    ofstream out;
+    out.open("/home/stoplime/ai_class/genetic_algorithm/test_runs/run"+to_string(run)+".txt");
     for(int i=0; i < epoch; i++){
-        cout << "Sorted samples: "<< endl;
+        out << "Sorted samples: "<< endl;
         sort_samples(samples);
-        show_samples(samples);
-        cout << "Crossover samples: "<< endl;
+        show_samples(samples, out);
+        out << "Crossover samples: "<< endl;
         crossover(samples);
         run_evaluation(samples);
-        show_samples(samples);
-        cout << "Mutated samples: "<< endl;
+        show_samples(samples, out);
+        out << "Mutated samples: "<< endl;
         mutate(samples);
         run_evaluation(samples);
-        show_samples(samples);
-        cout << "Best fit so far: "<< endl;
-        for(size_t i=0; i < samples.size(); i++){
-            if(best.eval < samples[i].eval){
-                best = samples[i];
+        show_samples(samples, out);
+        out << "Best fit so far: "<< endl;
+        for(size_t j=0; j < samples.size(); j++){
+            if(best.eval < samples[j].eval){
+                best = samples[j];
             }
         }
-        cout << "Sample best: " << best.code << "= " << best.value << " =>\t" << best.eval << endl;
+        out << "Sample best: \t\t\t\t" << best.code << "\t" << best.value << "\t" << best.eval << endl;
 
-        cout << "Average fit: "<< endl;
+        out << "Average fit: "<< endl;
         float average = 0;
-        for(size_t i=0; i < samples.size(); i++){
-            average += (float)samples[i].eval;
+        for(size_t j=0; j < samples.size(); j++){
+            average += (float)samples[j].eval;
         }
         average /= samples.size();
-        cout << "Eval: " << average << endl;
+        out << "Eval: \t\t\t\t\t\t\t" << i << "\t" << average << endl;
 
-        cout << endl;
+        out << endl;
     }
+    out.close();
 }
 
-void show_samples(vector<sample> sample_in)
+int evaluate(int value_in)
+{
+    /// Modified fit function with many local maximums
+    /// global max: x = 56564 with f(x) = 18019.01
+    // f(x) = 500 cos(0.005 x) sin(0.1 x) + 10000 sin(0.00025 x) + sqrt(1000 x)
+    return 500*cos(0.005*value_in)*sin(0.1*value_in)
+           +10000*sin(0.00025*value_in)
+           +sqrt(1000*value_in);
+    
+    /*
+    return pow(value_in, 2);
+    */
+}
+
+void show_samples(vector<sample> sample_in, ofstream& out)
 {
     for(size_t i=0; i < sample_in.size(); i++)
     {
-        cout <<  "Sample " << i << ": " << sample_in[i].code << "= " << sample_in[i].value << " =>\t" << sample_in[i].eval << endl;
+        out <<  "Sample " << i << ": \t" << sample_in[i].code << "\t" << sample_in[i].value << "\t" << sample_in[i].eval << endl;
     }
 }
 
@@ -106,11 +125,6 @@ int to_int(string samples_in)
         value += (pow(2,power++) * (samples_in[i] - '0'));
     }
     return value;
-}
-
-int evaluate(int value_in)
-{
-    return pow(value_in, 2);
 }
 
 void sort_samples(vector<sample>& samples_in)

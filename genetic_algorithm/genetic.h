@@ -6,6 +6,7 @@
 #include <vector>
 #include <ctime>
 #include <cmath>
+#include <fstream>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ struct sample{
     int eval;
 };
 
-void show_samples(vector<sample> samples_in);
+void show_samples(vector<sample> samples_in, ofstream& out);
 
 int to_int(string sample_in);
 

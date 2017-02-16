@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "g++",
     "isShellCommand": true,
-    "args": ["-g", "-Wall", "-o", "genetic1", "main.cpp"],
+    "args": ["-std=c++11", "-g", "-Wall", "-o", "genetic1", "main.cpp"],
     "showOutput": "always"
 }

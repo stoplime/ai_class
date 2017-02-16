@@ -31,7 +31,7 @@ node_class* xml_parse_class::recursive_parse(node_class* current_node, std::queu
     node_class* node = new node_class;
 
 
-    return new node_class;
+    return node;
 }
 
 /// parse arguments

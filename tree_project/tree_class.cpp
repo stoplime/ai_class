@@ -53,12 +53,34 @@ node_class* tree_class::depth_search(std::string search){
 	return depth_search(search, root);
 }
 
-/*
 /// Breadth first search
-node_class tree_class::breadth_search(str::string search){
-	
+node_class* tree_class::breadth_search(std::string search, std::vector<node_class*> current_layer){
+	std::vector<node_class*> next_layer;
+	for(unsigned int i=0; i < current_layer.size(); i++){
+		// if current node is the target, return it else append the children to next_layer
+		if(current_layer[i]->get_behavior() == search){
+			return current_layer[i];
+		}
+		if(current_layer[i]->get_response() == search){
+			return current_layer[i];
+		}
+		for(unsigned int j=0; j < current_layer[i]->get_children().size(); j++){
+			next_layer.push_back(current_layer[i]->get_children()[j]);
+		}
+	}
+	// if next_layer == empty then search not exist
+	if(next_layer.size() == 0){
+		return NULL;
+	}
+	return breadth_search(search, next_layer);
+}
+node_class* tree_class::breadth_search(std::string search){
+	std::vector<node_class*> vect_root;
+	vect_root.push_back(root);
+	return breadth_search(search, vect_root);
 }
 
+/*
 /// returns string from the print functions
 std::string tree_class::get_print (){
 	

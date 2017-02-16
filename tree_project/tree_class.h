@@ -25,10 +25,10 @@ public:
 	node_class* depth_search(std::string search);
 	node_class* depth_search(std::string search, node_class* current_node);
 
-	/*
 	/// Breadth first search
-	node_class breadth_search(std::string search);
-	
+	node_class* breadth_search(std::string search);
+	node_class* breadth_search(std::string search, std::vector<node_class*> current_node);
+	/*
 	/// returns string from the print functions
 	std::string get_print ();
 	*/

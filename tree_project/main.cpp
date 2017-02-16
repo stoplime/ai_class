@@ -23,7 +23,7 @@ int main()
 	t.new_child(*t.breadth_search("Ranged"), "", "Weapon 2");
 	t.new_child(*t.breadth_search("Ranged"), "", "Weapon 3");
 	
-	cout << t.breadth_search("Ranged")->get_print() << endl;
+	cout << t.breadth_search("Idle")->get_print() << endl;
 	xml_parse_class x;
 	x.parse_into_tree("/home/stoplime/ai_class/tree_project/test.xml");
 	return 0;

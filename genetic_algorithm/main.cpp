@@ -1,3 +1,4 @@
+/// ***** Steffen Lim ******
 // g++ -g -Wall -o genetic1 main.cpp
 #include "genetic.h"
 

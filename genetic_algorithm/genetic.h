@@ -15,10 +15,18 @@ struct sample{
     int eval;
 };
 
-void show_samples(vector<sample> sample_in);
+void show_samples(vector<sample> samples_in);
 
 int to_int(string sample_in);
 
 int evaluate(int value_in);
+
+void sort_samples(vector<sample>& samples_in);
+
+void crossover(vector<sample>& samples_in);
+
+void mutate(vector<sample>& samples_in);
+
+void run_evaluation(vector<sample>& samples_in);
 
 #endif

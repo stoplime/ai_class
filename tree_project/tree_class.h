@@ -37,6 +37,15 @@ namespace steffen_space{
 		vector<tree_node*> get_children(){
 			return children;
 		}
+		tree_node* get_child(size_t i){
+			return children[i];
+		}
+		tree_node* get_child(int i){
+			return children[i];
+		}
+		size_t get_num_children(){
+			return children.size();
+		}
 
 		void set_data(const unit& new_data){
 			data = new_data;
@@ -59,18 +68,19 @@ namespace steffen_space{
 			return children.size()==0;
 		}
 	};
-
+	/*
 	/// Insert new child
 	node_class* new_child(std::string _behavior, std::string _response);
 	node_class* new_child(node_class &_parent, std::string _behavior, std::string _response);
-	
-	/// Depth first search
-	node_class* depth_search(std::string search);
-	node_class* depth_search(std::string search, node_class* current_node);
+	*/
+
+	/// Depth first search (preorder)
+	template <class process, class node_class>
+	void depth_search(process f, node_class* node);
 
 	/// Breadth first search
-	node_class* breadth_search(std::string search);
-	node_class* breadth_search(std::string search, std::vector<node_class*> current_node);
+	template <class process, class node_class>
+	void breadth_search(process f, node_class* node);
 	
 }
 #endif

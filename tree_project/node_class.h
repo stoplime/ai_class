@@ -3,49 +3,58 @@
 
 #include <string>
 #include <vector>
+#include "tree_node.h"
 
 namespace steffen_space{
-	class node_class
+	class node_class : public _node_class
 	{
 	private:
-		/// Parent node
-		node_class* parent;
-		/// Vector of child nodes
-		std::vector<node_class*> children;
-		
-		/// Stores the behavior string
-		std::string behavior;
-		/// Stores the response string
+		std::string bahavior;
 		std::string response;
+		bool is_bahavior;
+
 	public:
 		/// Getters and Setters for the behavior
-		std::string get_behavior();
-		void set_behavior(std::string value);
-		
-		/// Getters and Setters for the response
-		std::string get_response();
-		void set_response(std::string value);
+		std::string get_behavior(){
+			return behavior;
+		}
+		void set_behavior(std::string value){
+			behavior = value;
+		}
 
-		/// Getter for children
-		std::vector<node_class*> get_children();
+		/// Getters and Setters for the response
+		std::string get_response(){
+			return response;
+		}
+		void set_response(std::string value){
+			response = value;
+		}
 		
 		/// Constructor: initializes private vars
-		node_class();
-		
-		/// Deconstructor:
-		~node_class();
-		
-		///	initializes the parent node to _parent
-		void set_parent(node_class &_parent);
-		
-		/// Insert child
-		void insert_child(node_class &child);
+		node_class(){
+			behavior = "ROOT";
+			response = "";
+			is_bahavior = true;
+		}
+		node_class(std::string _behavior, std::string _response){
+			behavior = _behavior;
+			response = _response;
+			if(_behavior == ""){
+				is_bahavior = false;
+			}
+			else{
+				is_bahavior = true;
+			}
+		}
 
-		/// create new child node
-		node_class* new_child(node_class &_parent, std::string _behavior, std::string _response);
-		
 		/// returns the string of a print function
-		std::string get_print ();
+		std::string get_print (){
+			if (is_bahavior){
+				return "behavior = " + behavior;
+			}else{
+				return "response = " + response;
+			}
+		}
 	};
 }
 #endif

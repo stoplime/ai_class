@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "g++",
     "isShellCommand": true,
-    "args": ["-g", "-Wall", "-o", "assignment1", "main.cpp", "tree_class.cpp", "node_class.cpp"],
+    "args": ["-std=c++11", "-g", "-Wall", "-o", "assignment1", "main.cpp", "xml_parse.cpp", "node_class.cpp"],
     "showOutput": "always"
 }

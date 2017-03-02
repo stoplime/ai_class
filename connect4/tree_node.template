@@ -1,0 +1,121 @@
+#include <iostream>
+#include <queue>
+#include <stack>
+#include <cstdlib>
+#include <iomanip>
+
+namespace steffen_space
+{
+	/// Constructor: empty 		-set as root where data is "ROOT"
+	///				 overloaded -set parent and data
+	template<class unit>
+	tree_node<unit>::tree_node()
+	: children()
+	{
+		data = unit();
+	}
+	template<class unit>
+	tree_node<unit>::tree_node(const unit& init_data)
+	: children()
+	{
+		data = init_data;
+	}
+	template<class unit>
+	tree_node<unit>::tree_node(const unit& init_data, std::vector<tree_node*> _children)
+	{
+		data = init_data;
+		children = _children;
+	}
+
+	template<class unit>
+	tree_node<unit>::~tree_node(){
+		for(int i = children.size(); i >= 0; i--){
+			delete children[i];
+		}
+		children.clear();
+	}
+
+	/// Depth first search
+	template <typename type>
+	type* depth_search(std::string search, type* node, int& count){
+		if(node != NULL){
+			std::stack<type*> list;
+			list.push(node);
+			while(!list.empty()){
+				type* top = list.top();
+				list.pop();
+				// count number of checks here
+				count++;
+				if(top->get_data().get_behavior() == search || top->get_data().get_response() == search){
+					return top;
+				}
+				for(size_t i=0; i < top->get_num_children(); i++){
+					list.push(top->get_child(i));
+				}
+			}
+		}
+		// node == NULL or not found
+		return NULL;
+	}
+
+	/// Depth first search recursive
+	template <typename type>
+	type* depth_search_recursive(std::string search, type* node, int& count){
+		if(node != NULL){
+			// count number of checks here
+			++count;
+			if(node->get_data().get_behavior() == search || node->get_data().get_response() == search){
+				return node;
+			}
+			type* temp = NULL;
+			for(size_t i=0; i < node->get_num_children(); i++){
+					temp = depth_search_recursive(search, node->get_child(i), count);
+					if(temp != NULL){
+					return temp;
+				}
+			}
+		}
+		// node == NULL or not found
+		return NULL;
+	}
+
+	/// Breadth first search
+	template <typename type>
+	type* breadth_search(std::string search, type* node, int& count){
+		if(node != NULL){
+			std::queue<type*> list;
+			list.push(node);
+			while(!list.empty()){
+				type* top = list.front();
+				list.pop();
+				// count number of checks here
+				count++;
+				if(top->get_data().get_behavior() == search || top->get_data().get_response() == search){
+					return top;
+				}
+				for(size_t i=0; i < top->get_num_children(); i++){
+					list.push(top->get_child(i));
+				}
+			}
+		}
+		// node == NULL or not found
+		return NULL;
+	}
+
+	/// Print tree
+	template <class unit, class size_type>
+    void print(tree_node<unit>* node, size_type depth){
+		if(node != NULL){
+			std::cout << std::setw(4*depth) << "" << node->get_data().to_string() << std::endl;
+			for(size_t i=0; i < node->get_num_children(); i++){
+				print(node->get_child(i), depth+1);
+			}
+		}
+	}
+	template <class unit>
+    void print(tree_node<unit>* node){
+		int depth = 0;
+		print(node, depth);
+	}
+
+}

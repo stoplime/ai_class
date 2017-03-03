@@ -1,6 +1,7 @@
 // Steffen Lim Connect 4 algorithm
 // g++ -g -Wall -o assignment2 main.cpp -I./headers
 #include "tree_node.h"
+#include "grid.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -9,15 +10,17 @@ using namespace std;
 using namespace steffen_space;
 
 // function prototypes
-void get_user_settings();
+void get_user_settings(grid_state grid);
 
 // main
 int main(int argc, char** argv){
-    get_user_settings();
+    grid_state board;
+    get_user_settings(board);
+
 }
 
 // function implementations
-void get_user_settings(){
+void get_user_settings(grid_state grid){
     string board_width;
     string board_height;
     string connet_length;
@@ -29,7 +32,5 @@ void get_user_settings(){
     cout << "Connect length:";
     cin >> connet_length;
 
-    cout << "M: " << board_width << endl;
-    cout << "N: " << board_height << endl;
-    cout << "R: " << connet_length << endl;
+    grid
 }

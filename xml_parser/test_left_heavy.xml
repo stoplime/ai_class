@@ -1,0 +1,30 @@
+<root>
+    <node behavior="branch1" response="">
+        <node behavior="branch11" response="">
+            <node behavior="" response="leaf1"/>
+        </node>
+        <node behavior="branch12" response="">
+            <node behavior="" response="leaf2"/>
+        </node>
+    </node>
+    <node behavior="branch2">
+        <node behavior="branch21" response="">
+            <node behavior="" response="leaf3"/>
+        </node>
+        <node behavior="branch22" response="">
+            <node behavior="" response="leaf4"/>
+        </node>
+    </node>
+    <node behavior="branch3">
+        <node behavior="branch31" response="">
+            <node behavior="" response="leaf5"/>
+            <node behavior="" response="leaf6"/>
+            <node behavior="" response="leaf7"/>
+        </node>
+        <node behavior="branch32" response="">
+            <node behavior="" response="leaf8"/>
+            <node behavior="" response="leaf9"/>
+            <node behavior="" response="leaf10"/>
+        </node>
+    </node>
+</root>

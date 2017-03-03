@@ -1,3 +1,4 @@
+// The tree data structure
 #ifndef _TREE_NODE_CLASS_H_
 #define _TREE_NODE_CLASS_H_
 
@@ -5,6 +6,7 @@
 #include <vector>
 #include <cstdlib>
 #include <iomanip>
+#include <algorithm>
 
 namespace steffen_space
 {

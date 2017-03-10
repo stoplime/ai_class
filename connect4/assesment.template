@@ -3,13 +3,27 @@
 #include <algorithm>
 
 namespace steffen_space{
-    template<int width = 7, int height = 6, int connect = 4>
-    assesment<width, height, connect>::assesment(){
-        current_grid = std::array<std::array<char, height>, width>();
+    template<int width, int height, int connect>
+    assesment<width, height, connect>::assesment(grid_state<width, height> board_state)
+    : state_space(current_grid)
+    {
+        current_grid = board_state.copy();
+        max_depth = 5;
     }
 
-    template<int width = 7, int height = 6, int connect = 4>
-    float assesment<width, height, connect>::utility(std::array<std::array<char, height>, width> grid, int x, int y, char turn){
+    template<int width, int height, int connect>
+    grid_state<width, height> assesment<width, height, connect>::get_grid(){
+        return current_grid;
+    }
+    
+    template<int width, int height, int connect>
+    float assesment<width, height, connect>::utility(int x, int y){
+        return this.utility(current_grid, x, y);
+    }
+
+    template<int width, int height, int connect>
+    float assesment<width, height, connect>::utility(const grid_state<width, height> input_grid, int x, int y){
+        std::array<std::array<char, height>, width> grid = input_grid.get_grid();
         assert(grid.size() > 0);
         // check invalid moves
         if (y < 0 || y >= (int)grid[0].size() || x < 0 || x >= (int)grid.size()){
@@ -95,5 +109,62 @@ namespace steffen_space{
         return 0;
     }
 
+    template<int width, int height, int connect>
+    float assesment<width, height, connect>::heuristics(grid_state<width, height> grid){
+        // TODO: evaluate the current board_state
+        return 0;
+    }
+
+    template<int width, int height, int connect>
+    void assesment<width, height, connect>::build_state_space(){
+        // reset state_space
+        state_space = tree_node<grid_state<width, height> >(current_grid);
+        // go through a depth first traversal building up the state_space
+        build_state_space_recursive(state_space, 0);
+    }
+
+    /// build and evaluate the state space recursively
+    /// node is the current state being evaluated
+    /// current_depth is the depth count
+    template<int width, int height, int connect>
+    void assesment<width, height, connect>::build_state_space_recursive(tree_node< grid_state<width, height> >* node, int current_depth){
+        int my_piece = 0;
+        if (current_depth %2 == 0)
+        {
+            
+        }
+        float eval = this.utility(node->get_data(), node->get_data().get_input());
+        // if there is a 4 in a row, skip children
+        if (eval >= 1000){
+            // if it is the opponents turn, negate eval
+            if (current_depth %2 != 0){
+                eval = -eval;
+            }
+            node->get_data().set_score(eval);
+            return;
+        }
+        // check depth
+        if (current_depth == max_depth)
+        {
+            node->get_data().set_score(this.heuristics(node->get_data()));
+            return;
+        }
+        // build children
+        for (size_t i = 0; i < width; i++){
+            grid_state<width, height> temp = node->get_data().copy();
+            size_t y = temp.set_data(turn, i);
+            if(y == -1){
+                continue;
+            }
+            // TODO: minimax algortihm goes here 
+
+            // TODO: set alpha beta pruning
+
+            tree_node< grid_state<width, height> > new_child(temp);
+            node->append_child(new_child);
+
+            build_state_space_recursive(new_child, ++current_depth);
+        }
+    }
 
 }

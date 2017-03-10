@@ -10,22 +10,34 @@
 using namespace std;
 using namespace steffen_space;
 
-assesment<> board;
+int width;
+int height;
+int connect;
 
 // function prototypes
 void get_user_settings();
-void player_turn();
-void oponent_turn();
+template<class assesment_type>
+float player_turn(assesment_type grid);
+template<class assesment_type>
+float oponent_turn(assesment_type grid);
 
 // main
 int main(int argc, char** argv){
     get_user_settings();
+    typedef assesment<width, height, connect> board_type;
+    board_type board(grid_state<width, height>());
     while (1)
     {
-        cout << board.current_grid.to_string();
-        player_turn();
-        cout << board.current_grid.to_string();
-        oponent_turn();
+        cout << board.get_grid().to_string();
+        float result = player_turn<board_type>(board);
+        if (result >= 1000){
+            return;
+        }
+        cout << board.get_grid().to_string();
+        result = oponent_turn<board_type>(board);
+        if (result >= 1000){
+            return;
+        }
     }
     
 }
@@ -43,23 +55,28 @@ void get_user_settings(){
     cout << "Connect length:";
     cin >> connet_length;
 
-    board = assesment<stoi(board_width),stoi(board_height),stoi(connet_length)>();
+    width = stoi(board_width);
+    height = stoi(board_height);
+    connect = stoi(connet_length);
 }
 
-void player_turn(){
+template<class assesment_type>
+float player_turn(assesment_type& grid){
     string input;
-    cout << "Player input(1-" << board.current_grid.get_grid().size() << "): ";
+    cout << "Player input(1-" << grid.current_grid.get_grid().size() << "): ";
     cin >> input;
-    size_t input_height = board.current_grid.set_data('X', stoi(input)-1);
-    float result = utility<char>(board.current_grid.get_grid(), stoi(input)-1, (int)input_height, 'X');
+    size_t input_height = grid.current_grid.set_data('X', stoi(input)-1);
+    float result = grid.utility(stoi(input)-1, (int)input_height);
     cout << "result: " << result << endl;
+    return result;
 }
 
-void oponent_turn(grid_state& grid){
+template<class assesment_type>
+float oponent_turn(assesment_type& grid){
     string input;
-    cout << "Oponent input(1-" << board.current_grid.get_grid().size() << "): ";
+    cout << "Oponent input(1-" << grid.current_grid.get_grid().size() << "): ";
     cin >> input;
-    size_t input_height = board.current_grid.set_data('O', stoi(input)-1);
-    float result = utility<char>(board.current_grid.get_grid(), stoi(input)-1, (int)input_height, 'O');
+    size_t input_height = grid.current_grid.set_data('O', stoi(input)-1);
+    float result = grid.utility(stoi(input)-1, (int)input_height);
     cout << "result: " << result << endl;
 }

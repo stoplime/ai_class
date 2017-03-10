@@ -6,12 +6,22 @@
 #include <string>
 
 namespace steffen_space{
-    template<int width = 7, int height = 6>
-    grid_state<width,height>::grid_state(){
-
+    template<int width, int height>
+    grid_state<width,height>::grid_state()
+    : grid()
+    {
+        score = 0;
+        input = -1;
+    }
+    template<int width, int height>
+    grid_state<width,height>::grid_state(float score, int input)
+    : grid()
+    {
+        this.score = score;
+        this.input = input;
     }
 
-    template<int width = 7, int height = 6>
+    template<int width, int height>
     grid_state<width, height> grid_state<width,height>::copy(){
         grid_state<width, height, connect> new_grid();
         for (size_t i = 0; i < grid.size(); i++)
@@ -24,12 +34,12 @@ namespace steffen_space{
         return new_grid;
     }
 
-    template<int width = 7, int height = 6>
+    template<int width, int height>
     std::array<std::array<char, height>, width> grid_state<width,height>::get_grid(){
         return grid;
     }
 
-    template<int width = 7, int height = 6>
+    template<int width, int height>
     size_t grid_state<width,height>::set_data(char value, size_t x){
         int input = 0;
         if(value == 'O'){
@@ -41,18 +51,11 @@ namespace steffen_space{
         return set_data(input, x);
     }
 
-    template<int width = 7, int height = 6>
+    template<int width, int height>
     size_t grid_state<width,height>::set_data(int value, size_t x){
         if(x < grid.size()){
-            size_t y = -1;
-            for (size_t i = 0; i < grid[x].size(); i++)
-            {
-                if(grid[x][i] == '.'){
-                    y = i;
-                    break;
-                }
-            }
-            if((int)y != -1){
+            int y = this.get_height_empty((int)x);
+            if(y != -1){
                 switch(value){
                     case 1:
                         grid[x][y] = 'O';
@@ -70,7 +73,38 @@ namespace steffen_space{
         return -1;
     }
 
-    template<int width = 7, int height = 6>
+    template<int width, int height>
+    float grid_state<width,height>::get_score(){
+        return score;
+    }
+    template<int width, int height>
+    void grid_state<width,height>::set_score(float value){
+        score = value;
+    }
+
+    template<int width, int height>
+    int grid_state<width,height>::get_input(){
+        return input;
+    }
+    template<int width, int height>
+    void grid_state<width,height>::set_input(int value){
+        input = value;
+    }
+
+    template<int width, int height>
+    int grid_state<width,height>::get_height_empty(int x){
+        int y = -1;
+        for (size_t i = 0; i < grid[x].size(); i++)
+        {
+            if(grid[x][i] == '.'){
+                y = (int)i;
+                break;
+            }
+        }
+        return y;
+    }
+
+    template<int width, int height>
     std::string grid_state<width,height>::to_string(){
         std::string output = "";
         for (int j = grid[0].size()-1; j >= 0; --j)

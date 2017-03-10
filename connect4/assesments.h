@@ -12,13 +12,15 @@ namespace steffen_space{
     class assesment
     {
     private:
+        const char empty_value = '.';
+
         grid_state<width, height> current_grid;
-        char empty_value = '.';
+        char ai_piece;
         tree_node<grid_state<width, height> > state_space;
         int max_depth;
 
     public:
-        assesment(grid_state<width, height> board_state);
+        assesment(grid_state<width, height> board_state, char ai_piece);
         ~assesment();
 
         grid_state<width, height> get_grid();        

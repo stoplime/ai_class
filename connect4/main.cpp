@@ -10,9 +10,12 @@
 using namespace std;
 using namespace steffen_space;
 
-int width;
-int height;
-int connect;
+// TODO: turn everything back into vector
+
+// default
+int width = 7;
+int height = 6;
+int connect = 4;
 
 // function prototypes
 void get_user_settings();
@@ -24,12 +27,11 @@ float oponent_turn(assesment_type grid);
 // main
 int main(int argc, char** argv){
     get_user_settings();
-    typedef assesment<width, height, connect> board_type;
-    board_type board(grid_state<width, height>());
+    assesment<width, height, connect> board(grid_state<width, height>(), 'O');
     while (1)
     {
         cout << board.get_grid().to_string();
-        float result = player_turn<board_type>(board);
+        float result = player_turn<assesment<width, height, connect>>(board);
         if (result >= 1000){
             return;
         }

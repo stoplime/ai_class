@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "g++",
     "isShellCommand": true,
-    "args": ["-std=c++11", "-g", "-Wall", "-o", "assignment2", "main.cpp"],
+    "args": ["-std=c++11", "-g", "-Wall", "-o", "assignment2", "main.cpp", "assesment.cpp", "grid.cpp"],
     "showOutput": "always"
 }

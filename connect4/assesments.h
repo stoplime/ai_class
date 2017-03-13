@@ -1,42 +1,48 @@
 // Evaluates the next choices
 #ifndef _ASSESMENTS_H_
 #define _ASSESMENTS_H_
-#include <array>
+#include <vector>
 #include <algorithm>
 #include <cassert>
 #include "grid.h"
 #include "tree_node.h"
 
 namespace steffen_space{
-    template<int width = 7, int height = 6, int connect = 4>
     class assesment
     {
     private:
         const char empty_value = '.';
 
-        grid_state<width, height> current_grid;
+        int width;
+        int height;
+        int connect;
+
+        grid_state current_grid;
         char ai_piece;
-        tree_node<grid_state<width, height> > state_space;
+        tree_node<grid_state> state_space;
         int max_depth;
 
     public:
-        assesment(grid_state<width, height> board_state, char ai_piece);
-        ~assesment();
+        assesment(int width, int height, int connect, char ai_piece, grid_state init_board);
+        assesment(int width, int height, int connect, char ai_piece);
+        //~assesment();
 
-        grid_state<width, height> get_grid();        
+        std::vector< std::vector<char> >& get_grid();
+        grid_state& get_grid_state();
 
         /// Utility assesment on an (x,y)
         /// (x, y) is new piece
         /// turn is the X or O turn
         /// grid is the board being evaluated
-        float utility(const grid_state<width, height> input_grid, int x, int y);
-        /// Utility on the current_grid
+        float utility(grid_state input_grid, int x, int y, int connect);
+        float utility(grid_state input_grid, int x, int y);
         float utility(int x, int y);
     
-        float heuristics(grid_state<width, height> grid);
+        float heuristics(grid_state input_grid);
+        float filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter);
 
-        void build_state_space();
-        void build_state_space_recursive(tree_node< grid_state<width, height> >* node, int current_depth);
+        int build_state_space();
+        int build_state_space_recursive(tree_node<grid_state>* node, int current_depth);
     };
 
 /*
@@ -56,5 +62,4 @@ namespace steffen_space{
     */
 }
 
-#include "assesment.template"
 #endif

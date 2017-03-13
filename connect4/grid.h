@@ -1,30 +1,31 @@
 // The node for holding the state space
-#ifndef _STATE_SPACE_H_
-#define _STATE_SPACE_H_
-#include <array>
+#ifndef _GRID_NODE_H_
+#define _GRID_NODE_H_
+#include <vector>
 #include <algorithm>
 #include <string>
 
 namespace steffen_space{
-
-    template<int width = 7, int height = 6>
     class grid_state
     {
     private:
-        std::array<std::array<char, height>, width> grid;
+        std::vector< std::vector<char> > grid;
+        int width;
+        int height;
         float score;
         int input;
     public:
         grid_state();
-        grid_state(float score, int input);
-        ~grid_state();
-        grid_state<width, height> copy();
+        grid_state(int width, int height);
+        grid_state(int width, int height, float score, int input);
+        //~grid_state();
+        grid_state copy();
 
         /// Encapsulation
-        std::array<std::array<char, height>, width> get_grid();
+        std::vector< std::vector<char> >& get_grid();
 
-        size_t set_data(char value, size_t x);
-        size_t set_data(int value, size_t x);
+        int set_data(char value, int x);
+        int set_data(int value, int x);
 
         float get_score();
         void set_score(float value);
@@ -38,6 +39,5 @@ namespace steffen_space{
     };
 }
 
-#include "grid.template"
 #endif
 

@@ -17,7 +17,7 @@ namespace steffen_space{
         this->connect = connect;
         this->ai_piece = ai_piece;
         current_grid = init_board.copy();
-        max_depth = 2;
+        max_depth = 5;
     }
     
     std::vector< std::vector<char> >& assesment::get_grid(){
@@ -248,33 +248,34 @@ namespace steffen_space{
         int minimax_child = 0;
         // build children
         for (int i = 0; i < width; i++){
-            grid_state temp = grid.copy();
-            int y = temp.set_data(turn, i);
+            grid_state* temp = new grid_state();
+            *temp = grid.copy();
+            int y = temp->set_data(turn, i);
             if(y == -1){
                 continue;
             }
 
             // TODO: set alpha beta pruning
-
-            tree_node< grid_state > new_child(temp);
-            node->append_child(&new_child);
+            tree_node< grid_state >* new_child = new tree_node< grid_state >();
+            *new_child = tree_node< grid_state >(*temp);
+            node->append_child(new_child);
             
-            build_state_space_recursive(&new_child, current_depth+1);
+            build_state_space_recursive(new_child, current_depth+1);
 
             if(i == 0){
-                minimax_thresh = temp.get_score();
+                minimax_thresh = temp->get_score();
             }
             else{
                 // if is max
                 if(current_depth %2 == 0){
-                    if (minimax_thresh < temp.get_score()){
-                        minimax_thresh = temp.get_score();
+                    if (minimax_thresh < temp->get_score()){
+                        minimax_thresh = temp->get_score();
                         minimax_child = i;
                     }
                 }
                 else{
-                    if (minimax_thresh > temp.get_score()){
-                        minimax_thresh = temp.get_score();
+                    if (minimax_thresh > temp->get_score()){
+                        minimax_thresh = temp->get_score();
                         minimax_child = i;
                     }
                 }

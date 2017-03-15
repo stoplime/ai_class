@@ -20,6 +20,7 @@ int connect = 4;
 // function prototypes
 void get_user_settings();
 float player_turn(assesment& grid);
+float ai_2_turn(assesment& grid);
 float oponent_turn(assesment& grid);
 
 // main
@@ -27,18 +28,28 @@ int main(int argc, char** argv){
     get_user_settings();
     assesment board(width, height, connect, 'O');
     cout << board.get_grid_state().to_string();
+    int count_turns = 0;
     while (1)
     {
-        float result = player_turn(board);
+        float result = ai_2_turn(board);
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
             cout << "Player won!" << endl;
             return 0;
         }
+        else if(++count_turns >= height*width){
+            cout << "Its a tie!" << endl;
+            return 0;
+        }
+        cout << endl;
         result = oponent_turn(board);
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
             cout << "AI won!" << endl;
+            return 0;
+        }
+        else if(++count_turns >= height*width){
+            cout << "Its a tie!" << endl;
             return 0;
         }
     }
@@ -67,15 +78,24 @@ float player_turn(assesment& grid){
     string input_str;
     cout << "Player input(1-" << grid.get_grid().size() << "): ";
     cin >> input_str;
-    int input = stoi(input_str)-1;
+    int input = stoi(input_str);
     int input_height = grid.get_grid_state().set_data('X', input);
     float result = grid.utility(input, input_height);
     cout << "result: " << result << endl;
     return result;
 }
 
+float ai_2_turn(assesment& grid){
+    int input = grid.build_state_space();
+    cout << "AI X input: " << input << endl;
+    int input_height = grid.get_grid_state().set_data('X', input);
+    float result = grid.utility(input, input_height);
+    return result;
+}
+
 float oponent_turn(assesment& grid){
     int input = grid.build_state_space();
+    cout << "AI O input: " << input << endl;
     int input_height = grid.get_grid_state().set_data('O', input);
     float result = grid.utility(input, input_height);
     return result;

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <algorithm>
 #include <stdlib.h>
+#include <time.h>
 
 namespace steffen_space{
     
@@ -19,6 +20,7 @@ namespace steffen_space{
         this->ai_piece = ai_piece;
         current_grid = init_board.copy();
         max_depth = 2;
+        srand(time(NULL));
     }
     
     std::vector< std::vector<char> >& assesment::get_grid(){
@@ -156,29 +158,33 @@ namespace steffen_space{
     }
 
     float assesment::filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter){
-        int filter_height = filter.size();
-        assert(filter_height > 0);
-        int filter_width = filter[0].size();
+        int filter_width = filter.size();
         assert(filter_width > 0);
+        int filter_height = filter[0].size();
+        assert(filter_height > 0);
 
         // weights
-        float ai_weight = 1;
-        float opponent_weight = -10;
-        float ai_pooling_weight = 1;
-        float opponent_pooling_weight = -10;
+        int ai_weight = 1;
+        int opponent_weight = -10;
+        float ai_4_weight = 100;
+        float opponent_4_weight = -1000;
+        float ai_3_weight = 1;
+        float opponent_3_weight = -10;
+        float ai_2_weight = 0.1;
+        float opponent_2_weight = -1;
 
         float total_value = 0;
         // grid iterations
-        for (int i = 0; i <= height-filter_height; i++){
-            for (int j = 0; j <= width-filter_width; j++){
-                float filter_value = 0;
+        for (int i = 0; i <= width-filter_width; i++){
+            for (int j = 0; j <= height-filter_height; j++){
+                int filter_value = 0;
                 // filter iterations
-                for (int f_i = 0; f_i < filter_height; f_i++){
-                    for (int f_j = 0; f_j < filter_width; f_j++){
+                for (int f_i = 0; f_i < filter_width; f_i++){
+                    for (int f_j = 0; f_j < filter_height; f_j++){
                         if (filter[f_i][f_j] == 1)
                         {
-                            if (grid[i+f_i][j+f_j] == '.'){
-                            }
+                            if (grid[i+f_i][j+f_j] == '.')
+                            {}
                             else if (grid[i+f_i][j+f_j] == ai_piece){
                                 filter_value += ai_weight;
                             }
@@ -189,12 +195,26 @@ namespace steffen_space{
                         
                     }
                 }// end of filter iteration
+                // check for four in a row
+                if(filter_value == 4*ai_weight){
+                    total_value += ai_4_weight;
+                }
+                else if(filter_value == 4*opponent_weight){
+                    total_value += opponent_4_weight;
+                }
                 // check for three in a row
                 if(filter_value == 3*ai_weight){
-                    total_value += ai_pooling_weight;
+                    total_value += ai_3_weight;
                 }
                 else if(filter_value == 3*opponent_weight){
-                    total_value += opponent_pooling_weight;
+                    total_value += opponent_3_weight;
+                }
+                // check for two in a row
+                if(filter_value == 2*ai_weight){
+                    total_value += ai_2_weight;
+                }
+                else if(filter_value == 2*opponent_weight){
+                    total_value += opponent_2_weight;
                 }
             }
         }// end of grid iteration
@@ -214,7 +234,7 @@ namespace steffen_space{
     
     int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth){
         grid_state* grid = &(node->get_data());
-        std::cout << "" << grid->get_score() << std::endl;
+        // std::cout << "" << grid->get_score() << std::endl;
         float eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
         // if there is a 4 in a row, skip children
         if (eval >= 1000){
@@ -223,8 +243,8 @@ namespace steffen_space{
                 eval = -eval;
             }
             grid->set_score(eval);
-            std::cout << grid->to_string();
-            std::cout << "utility: " << grid->get_score() << std::endl;
+            // std::cout << grid->to_string();
+            // std::cout << "utility: " << grid->get_score() << std::endl;
             return grid->get_input();
         }
         // check depth
@@ -232,8 +252,8 @@ namespace steffen_space{
         {
             // evaluate heuristics
             grid->set_score(this->heuristics(*grid));
-            std::cout << grid->to_string();
-            std::cout << "heuristic: " << grid->get_score() << std::endl;
+            // std::cout << grid->to_string();
+            // std::cout << "heuristic: " << grid->get_score() << std::endl;
             return grid->get_input();
         }
 
@@ -252,7 +272,7 @@ namespace steffen_space{
         }
         bool un_init = true;
         float minimax_thresh = 0;
-        int minimax_child = 0;
+        int minimax_child = -1;
         // build children
         for (int i = 0; i < width; i++){
             grid_state* temp = new grid_state();
@@ -268,7 +288,7 @@ namespace steffen_space{
             node->append_child(new_child);
             
             build_state_space_recursive(new_child, current_depth+1);
-            std::cout << std::setw(2*current_depth) << new_child->get_data().get_score() << std::endl;
+            // std::cout << std::setw(2*current_depth) << new_child->get_data().get_score() << std::endl;
 
             if(un_init){
                 minimax_thresh = new_child->get_data().get_score();
@@ -292,9 +312,9 @@ namespace steffen_space{
             }
         }
         grid->set_score(minimax_thresh);
-        // if (minimax_child == -1){
-        //     minimax_child = rand() % connect;
-        // }
+        if (minimax_child == -1){
+            minimax_child = rand() % connect;
+        }
         return minimax_child;
     }
 }

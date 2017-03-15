@@ -113,6 +113,7 @@ namespace steffen_space{
             for (int i = 0; i < width; ++i)
             {
                 output += grid[i][j];
+                output += " ";
             }
             output += "\n";
         }

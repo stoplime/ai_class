@@ -24,8 +24,8 @@ namespace steffen_space
 		///				 overloaded -set data
 		///				 overloaded -set data and children
 		tree_node();
-		tree_node(const unit& init_data);
-		tree_node(const unit& init_data, std::vector<tree_node*> _children);	
+		tree_node(unit& init_data);
+		tree_node(unit& init_data, std::vector<tree_node*> _children);	
 
 		~tree_node();
 		
@@ -48,6 +48,9 @@ namespace steffen_space
 
 		void set_data(const unit& new_data){
 			data = new_data;
+		}
+		void set_data_pointer(unit* new_data){
+			data = *new_data;
 		}
 		void append_child(tree_node* new_child){
 			children.push_back(new_child);

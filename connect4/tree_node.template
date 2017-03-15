@@ -15,14 +15,14 @@ namespace steffen_space
 		data = unit();
 	}
 	template<class unit>
-	tree_node<unit>::tree_node(const unit& init_data)
+	tree_node<unit>::tree_node(unit& init_data)
 	: children()
 	{
 		data = init_data;
 	}
 	
 	template<class unit>
-	tree_node<unit>::tree_node(const unit& init_data, std::vector<tree_node*> _children)
+	tree_node<unit>::tree_node(unit& init_data, std::vector<tree_node*> _children)
 	{
 		data = init_data;
 		children = _children;

@@ -26,16 +26,19 @@ float oponent_turn(assesment& grid);
 int main(int argc, char** argv){
     get_user_settings();
     assesment board(width, height, connect, 'O');
+    cout << board.get_grid_state().to_string();
     while (1)
     {
-        cout << board.get_grid_state().to_string();
         float result = player_turn(board);
+        cout << board.get_grid_state().to_string();
         if (result >= 1000){
+            cout << "Player won!" << endl;
             return 0;
         }
-        cout << board.get_grid_state().to_string();
         result = oponent_turn(board);
+        cout << board.get_grid_state().to_string();
         if (result >= 1000){
+            cout << "AI won!" << endl;
             return 0;
         }
     }

@@ -2,6 +2,7 @@
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <stdlib.h>
 
 namespace steffen_space{
     
@@ -17,7 +18,7 @@ namespace steffen_space{
         this->connect = connect;
         this->ai_piece = ai_piece;
         current_grid = init_board.copy();
-        max_depth = 5;
+        max_depth = 2;
     }
     
     std::vector< std::vector<char> >& assesment::get_grid(){
@@ -212,23 +213,28 @@ namespace steffen_space{
     /// current_depth is the depth count
     
     int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth){
-        grid_state grid = node->get_data();
-        float eval = this->utility(grid, grid.get_input(), grid.get_height_empty(grid.get_input()));
+        grid_state* grid = &(node->get_data());
+        std::cout << "" << grid->get_score() << std::endl;
+        float eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
         // if there is a 4 in a row, skip children
         if (eval >= 1000){
             // if it is the opponents turn, negate eval
             if (current_depth %2 != 0){
                 eval = -eval;
             }
-            grid.set_score(eval);
-            return grid.get_input();
+            grid->set_score(eval);
+            std::cout << grid->to_string();
+            std::cout << "utility: " << grid->get_score() << std::endl;
+            return grid->get_input();
         }
         // check depth
         if (current_depth >= max_depth)
         {
             // evaluate heuristics
-            grid.set_score(this->heuristics(grid));
-            return grid.get_input();
+            grid->set_score(this->heuristics(*grid));
+            std::cout << grid->to_string();
+            std::cout << "heuristic: " << grid->get_score() << std::endl;
+            return grid->get_input();
         }
 
         // figure out whose turn it is
@@ -244,44 +250,51 @@ namespace steffen_space{
                 turn = 'X';
             }
         }
+        bool un_init = true;
         float minimax_thresh = 0;
         int minimax_child = 0;
         // build children
         for (int i = 0; i < width; i++){
             grid_state* temp = new grid_state();
-            *temp = grid.copy();
+            *temp = grid->copy();
             int y = temp->set_data(turn, i);
             if(y == -1){
                 continue;
             }
 
             // TODO: set alpha beta pruning
-            tree_node< grid_state >* new_child = new tree_node< grid_state >();
-            *new_child = tree_node< grid_state >(*temp);
+            tree_node< grid_state >* new_child = new tree_node< grid_state >(*temp);
+            new_child->set_data_pointer(temp);
             node->append_child(new_child);
             
             build_state_space_recursive(new_child, current_depth+1);
+            std::cout << std::setw(2*current_depth) << new_child->get_data().get_score() << std::endl;
 
-            if(i == 0){
-                minimax_thresh = temp->get_score();
+            if(un_init){
+                minimax_thresh = new_child->get_data().get_score();
+                minimax_child = i;
+                un_init = false;
             }
             else{
                 // if is max
                 if(current_depth %2 == 0){
-                    if (minimax_thresh < temp->get_score()){
-                        minimax_thresh = temp->get_score();
+                    if (minimax_thresh < new_child->get_data().get_score()){
+                        minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
                     }
                 }
                 else{
-                    if (minimax_thresh > temp->get_score()){
-                        minimax_thresh = temp->get_score();
+                    if (minimax_thresh > new_child->get_data().get_score()){
+                        minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
                     }
                 }
             }
         }
-        grid.set_score(minimax_thresh);
+        grid->set_score(minimax_thresh);
+        // if (minimax_child == -1){
+        //     minimax_child = rand() % connect;
+        // }
         return minimax_child;
     }
 }

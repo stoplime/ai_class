@@ -19,7 +19,7 @@ int connect = 4;
 
 // function prototypes
 void get_user_settings();
-float player_turn(assesment& grid);
+float player_turn(assesment& grid, char char_input);
 float ai_2_turn(assesment& grid);
 float oponent_turn(assesment& grid);
 
@@ -31,21 +31,35 @@ int main(int argc, char** argv){
     int count_turns = 0;
     while (1)
     {
-        float result = ai_2_turn(board);
+        float result = player_turn(board, 'X');
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
-            cout << "Player won!" << endl;
+            cout << "X won!" << endl;
             return 0;
         }
         else if(++count_turns >= height*width){
             cout << "Its a tie!" << endl;
             return 0;
         }
+        // board.heuristics(board.get_grid_state());
         cout << endl;
+        /*
+        result = player_turn(board, 'O');
+        cout << board.get_grid_state().to_string();
+        if (result >= 1000){
+            cout << "X won!" << endl;
+            return 0;
+        }
+        else if(++count_turns >= height*width){
+            cout << "Its a tie!" << endl;
+            return 0;
+        }
+        board.heuristics(board.get_grid_state());
+        //*/
         result = oponent_turn(board);
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
-            cout << "AI won!" << endl;
+            cout << "O won!" << endl;
             return 0;
         }
         else if(++count_turns >= height*width){
@@ -74,12 +88,12 @@ void get_user_settings(){
     connect = stoi(connet_length);
 }
 
-float player_turn(assesment& grid){
+float player_turn(assesment& grid, char char_input){
     string input_str;
     cout << "Player input(1-" << grid.get_grid().size() << "): ";
     cin >> input_str;
-    int input = stoi(input_str);
-    int input_height = grid.get_grid_state().set_data('X', input);
+    int input = stoi(input_str)-1;
+    int input_height = grid.get_grid_state().set_data(char_input, input);
     float result = grid.utility(input, input_height);
     cout << "result: " << result << endl;
     return result;

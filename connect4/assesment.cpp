@@ -19,7 +19,7 @@ namespace steffen_space{
         this->connect = connect;
         this->ai_piece = ai_piece;
         current_grid = init_board.copy();
-        max_depth = 2;
+        max_depth = 5;
         srand(time(NULL));
     }
     
@@ -150,9 +150,10 @@ namespace steffen_space{
         // diagonal bottom_right to top_left
         std::vector< std::vector<int> > d2_filter(connect, std::vector<int>(connect, 0));
         for (int i = 0; i < connect; i++){
-            d1_filter[connect-(i+1)][i] = 1;
+            d2_filter[connect-(i+1)][i] = 1;
         }
         total_value += filter_assesment(grid, d2_filter);
+        // std::cout << "heuristic: " << total_value << std::endl;
 
         return total_value;
     }

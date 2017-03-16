@@ -22,6 +22,16 @@ namespace steffen_space{
         tree_node<grid_state> state_space;
         int max_depth;
 
+        // heuristic weights
+        int ai_weight = 1;
+        int opponent_weight = -10;
+        float ai_4_weight = 100;
+        float opponent_4_weight = -1000;
+        float ai_3_weight = 1;
+        float opponent_3_weight = -10;
+        float ai_2_weight = 0.1;
+        float opponent_2_weight = -1;
+
     public:
         assesment(int width, int height, int connect, char ai_piece, grid_state init_board);
         assesment(int width, int height, int connect, char ai_piece);
@@ -42,7 +52,12 @@ namespace steffen_space{
         float filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter);
 
         int build_state_space();
-        int build_state_space_recursive(tree_node<grid_state>* node, int current_depth);
+        int build_state_space_recursive(tree_node<grid_state>* node, int current_depth, float alpha, float beta);
+
+        int get_max_depth();
+        void set_max_depth(int value);
+
+        // void flip_weights();
     };
 
 /*

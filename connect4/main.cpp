@@ -16,6 +16,7 @@ using namespace steffen_space;
 int width = 7;
 int height = 6;
 int connect = 4;
+int ai_depth = 5;
 
 // function prototypes
 void get_user_settings();
@@ -27,6 +28,8 @@ float oponent_turn(assesment& grid);
 int main(int argc, char** argv){
     get_user_settings();
     assesment board(width, height, connect, 'O');
+    board.set_max_depth(ai_depth);
+    cout << board.get_max_depth() << endl;
     cout << board.get_grid_state().to_string();
     int count_turns = 0;
     while (1)
@@ -75,6 +78,7 @@ void get_user_settings(){
     string board_width;
     string board_height;
     string connet_length;
+    string ai_depth_str;
     
     cout << "Width of board:";
     cin >> board_width;
@@ -82,10 +86,13 @@ void get_user_settings(){
     cin >> board_height;
     cout << "Connect length:";
     cin >> connet_length;
+    cout << "AI depth:";
+    cin >> ai_depth_str;
 
     width = stoi(board_width);
     height = stoi(board_height);
     connect = stoi(connet_length);
+    ai_depth = stoi(ai_depth_str);
 }
 
 float player_turn(assesment& grid, char char_input){

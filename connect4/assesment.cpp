@@ -19,8 +19,19 @@ namespace steffen_space{
         this->connect = connect;
         this->ai_piece = ai_piece;
         current_grid = init_board.copy();
-        max_depth = 5;
+        max_depth = 2;
         srand(time(NULL));
+    }
+
+    int assesment::get_max_depth(){
+        return max_depth;
+    }
+
+    void assesment::set_max_depth(int value){
+        // if(value%2 == 0){
+        //     flip_weights();
+        // }
+        max_depth = value;
     }
     
     std::vector< std::vector<char> >& assesment::get_grid(){
@@ -30,6 +41,15 @@ namespace steffen_space{
     grid_state& assesment::get_grid_state(){
         return current_grid;
     }
+
+    // void assesment::flip_weights(){
+    //     ai_4_weight = 1000;
+    //     opponent_4_weight = -100;
+    //     ai_3_weight = 10;
+    //     opponent_3_weight = -1;
+    //     ai_2_weight = 1;
+    //     opponent_2_weight = -0.1;
+    // }
     
     float assesment::utility(int x, int y){
         return this->utility(this->current_grid, x, y, this->connect);
@@ -160,19 +180,9 @@ namespace steffen_space{
 
     float assesment::filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter){
         int filter_width = filter.size();
-        assert(filter_width > 0);
+        assert(filter_width > 0); 
         int filter_height = filter[0].size();
         assert(filter_height > 0);
-
-        // weights
-        int ai_weight = 1;
-        int opponent_weight = -10;
-        float ai_4_weight = 100;
-        float opponent_4_weight = -1000;
-        float ai_3_weight = 1;
-        float opponent_3_weight = -10;
-        float ai_2_weight = 0.1;
-        float opponent_2_weight = -1;
 
         float total_value = 0;
         // grid iterations
@@ -226,14 +236,14 @@ namespace steffen_space{
         // reset state_space
         state_space = tree_node<grid_state >(current_grid);
         // go through a depth first traversal building up the state_space
-        return build_state_space_recursive(&state_space, 0);
+        return build_state_space_recursive(&state_space, 0, -10000000, 10000000);
     }
 
     /// build and evaluate the state space recursively
     /// node is the current state being evaluated
     /// current_depth is the depth count
     
-    int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth){
+    int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth, float alpha, float beta){
         grid_state* grid = &(node->get_data());
         // std::cout << "" << grid->get_score() << std::endl;
         float eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
@@ -243,7 +253,7 @@ namespace steffen_space{
             if (current_depth %2 != 0){
                 eval = -eval;
             }
-            grid->set_score(eval);
+            grid->set_score(100*eval);
             // std::cout << grid->to_string();
             // std::cout << "utility: " << grid->get_score() << std::endl;
             return grid->get_input();
@@ -272,10 +282,30 @@ namespace steffen_space{
             }
         }
         bool un_init = true;
-        float minimax_thresh = 0;
+        float minimax_thresh;
+        if (current_depth %2 == 0){
+            minimax_thresh = alpha;
+        }
+        else{
+            minimax_thresh = beta;
+        }
         int minimax_child = -1;
+
+        // build children in optimized order
+        int mid = ((width%2 == 0)? (width): (width-1))/2;
+        std::vector<int> children_order = std::vector<int>(width, mid);
+        int index_variance = 1;
+        for (int i = 1; i < width; i += 2, ++index_variance){
+            if(mid+index_variance < width){
+                children_order[i] = mid+index_variance;
+            }
+            if(mid-index_variance >= 0){
+                children_order[i+1] = mid-index_variance;
+            }
+        }
         // build children
-        for (int i = 0; i < width; i++){
+        for (int index = 0; index < width; index++){
+            int i = children_order[index];
             grid_state* temp = new grid_state();
             *temp = grid->copy();
             int y = temp->set_data(turn, i);
@@ -284,11 +314,11 @@ namespace steffen_space{
             }
 
             // TODO: set alpha beta pruning
-            tree_node< grid_state >* new_child = new tree_node< grid_state >(*temp);
+            tree_node< grid_state >* new_child = new tree_node< grid_state >();
             new_child->set_data_pointer(temp);
             node->append_child(new_child);
             
-            build_state_space_recursive(new_child, current_depth+1);
+            build_state_space_recursive(new_child, current_depth+1, alpha, beta);
             // std::cout << std::setw(2*current_depth) << new_child->get_data().get_score() << std::endl;
 
             if(un_init){
@@ -303,11 +333,17 @@ namespace steffen_space{
                         minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
                     }
+                    if(beta <= minimax_thresh){
+                        break;
+                    }
                 }
                 else{
                     if (minimax_thresh > new_child->get_data().get_score()){
                         minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
+                    }
+                    if(minimax_thresh <= alpha){
+                        break;
                     }
                 }
             }

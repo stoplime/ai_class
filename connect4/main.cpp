@@ -18,9 +18,11 @@ int height = 6;
 int connect = 4;
 int ai_depth = 5;
 
+grid_state pre_state;
+
 // function prototypes
 void get_user_settings();
-float player_turn(assesment& grid, char char_input);
+float player_turn(assesment& grid, char char_input, grid_state& prev);
 float ai_2_turn(assesment& grid);
 float oponent_turn(assesment& grid);
 
@@ -31,13 +33,30 @@ int main(int argc, char** argv){
     board.set_max_depth(ai_depth);
     cout << board.get_max_depth() << endl;
     cout << board.get_grid_state().to_string();
+    pre_state = board.get_grid_state();
     int count_turns = 0;
     while (1)
     {
-        float result = player_turn(board, 'X');
+        float result = player_turn(board, 'X', pre_state);
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
             cout << "X won!" << endl;
+            return 0;
+        }
+        else if(++count_turns >= height*width){
+            cout << "Its a tie!" << endl;
+            return 0;
+        }
+        
+        // board.heuristics(board.get_grid_state());
+        // board.build_state_space();
+        cout << endl;
+        
+        /*
+        result = player_turn(board, 'O');
+        cout << board.get_grid_state().to_string();
+        if (result >= 1000){
+            cout << "O won!" << endl;
             return 0;
         }
         else if(++count_turns >= height*width){
@@ -45,20 +64,9 @@ int main(int argc, char** argv){
             return 0;
         }
         // board.heuristics(board.get_grid_state());
-        cout << endl;
-        /*
-        result = player_turn(board, 'O');
-        cout << board.get_grid_state().to_string();
-        if (result >= 1000){
-            cout << "X won!" << endl;
-            return 0;
-        }
-        else if(++count_turns >= height*width){
-            cout << "Its a tie!" << endl;
-            return 0;
-        }
-        board.heuristics(board.get_grid_state());
+        board.build_state_space();
         //*/
+        
         result = oponent_turn(board);
         cout << board.get_grid_state().to_string();
         if (result >= 1000){
@@ -69,6 +77,7 @@ int main(int argc, char** argv){
             cout << "Its a tie!" << endl;
             return 0;
         }
+        //*/
     }
     
 }
@@ -95,11 +104,20 @@ void get_user_settings(){
     ai_depth = stoi(ai_depth_str);
 }
 
-float player_turn(assesment& grid, char char_input){
+float player_turn(assesment& grid, char char_input, grid_state& prev){
     string input_str;
     cout << "Player input(1-" << grid.get_grid().size() << "): ";
     cin >> input_str;
     int input = stoi(input_str)-1;
+    if(input == -1){
+        grid.get_grid_state() = prev;
+        cout << grid.get_grid_state().to_string();
+        return player_turn(grid, char_input, prev);
+    }
+    else{
+        prev = grid.get_grid_state();
+    }
+
     int input_height = grid.get_grid_state().set_data(char_input, input);
     float result = grid.utility(input, input_height);
     cout << "result: " << result << endl;

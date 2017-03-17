@@ -44,9 +44,9 @@ namespace steffen_space{
         /// (x, y) is new piece
         /// turn is the X or O turn
         /// grid is the board being evaluated
-        float utility(grid_state input_grid, int x, int y, int connect);
-        float utility(grid_state input_grid, int x, int y);
-        float utility(int x, int y);
+        bool utility(grid_state input_grid, int x, int y, int connect);
+        bool utility(grid_state input_grid, int x, int y);
+        bool utility(int x, int y);
     
         float heuristics(grid_state input_grid);
         float filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter);
@@ -57,24 +57,8 @@ namespace steffen_space{
         int get_max_depth();
         void set_max_depth(int value);
 
-        // void flip_weights();
+        void update_weights();
     };
-
-/*
-    /// calculate the best valued choise based on iterative utility checks
-    /// grid is the current board
-    /// turn is choice being optimized
-    template<class type>
-    int expected_value(std::vector< std::vector<type> > grid, type turn){
-        // state_space contains a tree like structure of all the possible choices on the grid starting with turn
-        state_space states;
-
-    }
-    
-    short int heuristics(){
-        
-    }
-    */
 }
 
 #endif

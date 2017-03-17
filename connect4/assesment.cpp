@@ -21,6 +21,7 @@ namespace steffen_space{
         current_grid = init_board.copy();
         max_depth = 2;
         srand(time(NULL));
+        update_weights();
     }
 
     int assesment::get_max_depth(){
@@ -28,9 +29,6 @@ namespace steffen_space{
     }
 
     void assesment::set_max_depth(int value){
-        // if(value%2 == 0){
-        //     flip_weights();
-        // }
         max_depth = value;
     }
     
@@ -42,29 +40,31 @@ namespace steffen_space{
         return current_grid;
     }
 
-    // void assesment::flip_weights(){
-    //     ai_4_weight = 1000;
-    //     opponent_4_weight = -100;
-    //     ai_3_weight = 10;
-    //     opponent_3_weight = -1;
-    //     ai_2_weight = 1;
-    //     opponent_2_weight = -0.1;
-    // }
+    void assesment::update_weights(){
+        ai_weight = 1;
+        opponent_weight = -connect;
+        ai_4_weight = connect*connect*connect*connect;
+        opponent_4_weight = -connect*connect*connect*connect*connect;
+        ai_3_weight = connect*connect;
+        opponent_3_weight = -connect*connect*connect;
+        ai_2_weight = 1;
+        opponent_2_weight = -connect;
+    }
     
-    float assesment::utility(int x, int y){
+    bool assesment::utility(int x, int y){
         return this->utility(this->current_grid, x, y, this->connect);
     }
 
-    float assesment::utility(grid_state input_grid, int x, int y){
+    bool assesment::utility(grid_state input_grid, int x, int y){
         return this->utility(input_grid, x, y, this->connect);
     }
     
-    float assesment::utility(grid_state input_grid, int x, int y, int connect){
+    bool assesment::utility(grid_state input_grid, int x, int y, int connect){
         std::vector< std::vector<char> > grid = input_grid.get_grid();
         assert(width > 0);
         // check invalid moves
         if (y < 0 || y >= height || x < 0 || x >= width){
-            return 0;
+            return false;
         }
 
         // check vertical
@@ -78,7 +78,7 @@ namespace steffen_space{
             }
             else{
                 if(++count >= connect && value != empty_value){
-                    return 1000;
+                    return true;
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace steffen_space{
             }
             else{
                 if(++count >= connect && value != empty_value){
-                    return 1000;
+                    return true;
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace steffen_space{
             }
             else{
                 if(++count >= connect && value != empty_value){
-                    return 1000;
+                    return true;
                 }
             }
             ++row;
@@ -135,7 +135,7 @@ namespace steffen_space{
             }
             else{
                 if(++count >= connect && value != empty_value){
-                    return 1000;
+                    return true;
                 }
             }
             --row;
@@ -143,7 +143,7 @@ namespace steffen_space{
         }
         
         // there is no 4 in a row
-        return 0;
+        return false;
     }
     
     float assesment::heuristics(grid_state input_grid){
@@ -236,7 +236,7 @@ namespace steffen_space{
         // reset state_space
         state_space = tree_node<grid_state >(current_grid);
         // go through a depth first traversal building up the state_space
-        return build_state_space_recursive(&state_space, 0, -10000000, 10000000);
+        return build_state_space_recursive(&state_space, 0, -10000000000, 10000000000);
     }
 
     /// build and evaluate the state space recursively
@@ -246,16 +246,20 @@ namespace steffen_space{
     int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth, float alpha, float beta){
         grid_state* grid = &(node->get_data());
         // std::cout << "" << grid->get_score() << std::endl;
-        float eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
+        bool eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
         // if there is a 4 in a row, skip children
-        if (eval >= 1000){
-            // if it is the opponents turn, negate eval
-            if (current_depth %2 != 0){
-                eval = -eval;
+        if (eval){
+            // if it is the ai turn, then win the game
+            if (current_depth %2 == 0){
+                grid->set_score(-10000000);
             }
-            grid->set_score(100*eval);
-            // std::cout << grid->to_string();
-            // std::cout << "utility: " << grid->get_score() << std::endl;
+            // else if it is the opponents turn, then prevent a loss
+            else{
+                grid->set_score(10000000);
+            }
+            
+            std::cout << grid->to_string();
+            std::cout << "utility: " << grid->get_score() << std::endl;
             return grid->get_input();
         }
         // check depth
@@ -313,7 +317,6 @@ namespace steffen_space{
                 continue;
             }
 
-            // TODO: set alpha beta pruning
             tree_node< grid_state >* new_child = new tree_node< grid_state >();
             new_child->set_data_pointer(temp);
             node->append_child(new_child);

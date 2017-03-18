@@ -43,12 +43,12 @@ namespace steffen_space{
     void assesment::update_weights(){
         ai_weight = 1;
         opponent_weight = -connect;
-        ai_4_weight = connect*connect*connect*connect;
-        opponent_4_weight = -connect*connect*connect*connect*connect;
-        ai_3_weight = connect*connect;
-        opponent_3_weight = -connect*connect*connect;
+        ai_4_weight = connect*connect*connect*connect*connect;
+        opponent_4_weight = -connect*connect*connect*connect;
+        ai_3_weight = connect;
+        opponent_3_weight = -connect;
         ai_2_weight = 1;
-        opponent_2_weight = -connect;
+        opponent_2_weight = -1;
     }
     
     bool assesment::utility(int x, int y){
@@ -207,36 +207,40 @@ namespace steffen_space{
                     }
                 }// end of filter iteration
                 // check for four in a row
-                if(filter_value == 4*ai_weight){
+                if(filter_value == connect*ai_weight){
                     total_value += ai_4_weight;
                 }
-                else if(filter_value == 4*opponent_weight){
+                else if(filter_value == connect*opponent_weight){
                     total_value += opponent_4_weight;
                 }
                 // check for three in a row
-                if(filter_value == 3*ai_weight){
+                if(filter_value == (connect-1)*ai_weight){
                     total_value += ai_3_weight;
                 }
-                else if(filter_value == 3*opponent_weight){
+                else if(filter_value == (connect-1)*opponent_weight){
                     total_value += opponent_3_weight;
                 }
                 // check for two in a row
-                if(filter_value == 2*ai_weight){
+                if(filter_value == (connect-2)*ai_weight){
                     total_value += ai_2_weight;
                 }
-                else if(filter_value == 2*opponent_weight){
+                else if(filter_value == (connect-2)*opponent_weight){
                     total_value += opponent_2_weight;
                 }
+                // total_value += filter_value;
             }
         }// end of grid iteration
         return total_value;
     }
     
     int assesment::build_state_space(){
+        iterations = 0;
         // reset state_space
         state_space = tree_node<grid_state >(current_grid);
         // go through a depth first traversal building up the state_space
-        return build_state_space_recursive(&state_space, 0, -10000000000, 10000000000);
+        int score = build_state_space_recursive(&state_space, 0, -10000000000, 10000000000);
+        std::cout << "iterations: " << iterations << std::endl;
+        return score;
     }
 
     /// build and evaluate the state space recursively
@@ -244,13 +248,15 @@ namespace steffen_space{
     /// current_depth is the depth count
     
     int assesment::build_state_space_recursive(tree_node< grid_state >* node, int current_depth, float alpha, float beta){
+        bool is_max = current_depth %2 == 0;
         grid_state* grid = &(node->get_data());
+        /*
         // std::cout << "" << grid->get_score() << std::endl;
         bool eval = this->utility(*grid, grid->get_input(), grid->get_height_empty(grid->get_input()));
         // if there is a 4 in a row, skip children
         if (eval){
             // if it is the ai turn, then win the game
-            if (current_depth %2 == 0){
+            if (is_max){
                 grid->set_score(-10000000);
             }
             // else if it is the opponents turn, then prevent a loss
@@ -258,10 +264,12 @@ namespace steffen_space{
                 grid->set_score(10000000);
             }
             
-            std::cout << grid->to_string();
-            std::cout << "utility: " << grid->get_score() << std::endl;
+            // std::cout << grid->to_string();
+            // std::cout << "utility: " << grid->get_score() << std::endl;
             return grid->get_input();
         }
+        //*/
+
         // check depth
         if (current_depth >= max_depth)
         {
@@ -274,7 +282,7 @@ namespace steffen_space{
 
         // figure out whose turn it is
         char turn = '.';
-        if (current_depth %2 == 0){
+        if (is_max){
             turn = ai_piece;
         }
         else{
@@ -286,13 +294,7 @@ namespace steffen_space{
             }
         }
         bool un_init = true;
-        float minimax_thresh;
-        if (current_depth %2 == 0){
-            minimax_thresh = alpha;
-        }
-        else{
-            minimax_thresh = beta;
-        }
+        float& minimax_thresh = (is_max)? (alpha): (beta);
         int minimax_child = -1;
 
         // build children in optimized order
@@ -317,6 +319,19 @@ namespace steffen_space{
                 continue;
             }
 
+            iterations++;
+
+            if(this->utility(*temp, temp->get_input(), temp->get_height_empty(temp->get_input()))){
+                if(is_max){
+                    minimax_thresh = 10000000;
+                }
+                else{
+                    minimax_thresh = -10000000;
+                }
+                minimax_child = i;
+                break;
+            }
+
             tree_node< grid_state >* new_child = new tree_node< grid_state >();
             new_child->set_data_pointer(temp);
             node->append_child(new_child);
@@ -331,13 +346,10 @@ namespace steffen_space{
             }
             else{
                 // if is max
-                if(current_depth %2 == 0){
+                if(is_max){
                     if (minimax_thresh < new_child->get_data().get_score()){
                         minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
-                    }
-                    if(beta <= minimax_thresh){
-                        break;
                     }
                 }
                 else{
@@ -345,10 +357,10 @@ namespace steffen_space{
                         minimax_thresh = new_child->get_data().get_score();
                         minimax_child = i;
                     }
-                    if(minimax_thresh <= alpha){
-                        break;
-                    }
                 }
+            }
+            if (alpha > beta){
+                break;
             }
         }
         grid->set_score(minimax_thresh);

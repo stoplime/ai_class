@@ -32,6 +32,9 @@ namespace steffen_space{
         float ai_2_weight = 0.1;
         float opponent_2_weight = -1;
 
+        // debug
+        int iterations = 0;
+
     public:
         assesment(int width, int height, int connect, char ai_piece, grid_state init_board);
         assesment(int width, int height, int connect, char ai_piece);

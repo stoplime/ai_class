@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <ctime>
 
 using namespace std;
 using namespace steffen_space;
@@ -17,14 +18,15 @@ int width = 7;
 int height = 6;
 int connect = 4;
 int ai_depth = 5;
+int count_turns = 0;
 
 grid_state pre_state;
 
 // function prototypes
 void get_user_settings();
-float player_turn(assesment& grid, char char_input, grid_state& prev);
-float ai_2_turn(assesment& grid);
-float oponent_turn(assesment& grid);
+bool player_turn(assesment& grid, char char_input, grid_state& prev);
+bool ai_X_turn(assesment& grid);
+bool ai_O_turn(assesment& grid);
 
 // main
 int main(int argc, char** argv){
@@ -34,12 +36,12 @@ int main(int argc, char** argv){
     cout << board.get_max_depth() << endl;
     cout << board.get_grid_state().to_string();
     pre_state = board.get_grid_state();
-    int count_turns = 0;
     while (1)
     {
-        float result = player_turn(board, 'X', pre_state);
+        // bool result = player_turn(board, 'X', pre_state); /*
+        bool result = ai_X_turn(board); //*/
         cout << board.get_grid_state().to_string();
-        if (result >= 1000){
+        if (result){
             cout << "X won!" << endl;
             return 0;
         }
@@ -50,7 +52,7 @@ int main(int argc, char** argv){
         
         // board.heuristics(board.get_grid_state());
         // board.build_state_space();
-        cout << endl;
+        // cout << endl;
         
         /*
         result = player_turn(board, 'O');
@@ -67,9 +69,10 @@ int main(int argc, char** argv){
         board.build_state_space();
         //*/
         
-        result = oponent_turn(board);
+        result = ai_O_turn(board); /*
+        result = player_turn(board, 'O', pre_state); //*/
         cout << board.get_grid_state().to_string();
-        if (result >= 1000){
+        if (result){
             cout << "O won!" << endl;
             return 0;
         }
@@ -104,14 +107,15 @@ void get_user_settings(){
     ai_depth = stoi(ai_depth_str);
 }
 
-float player_turn(assesment& grid, char char_input, grid_state& prev){
+bool player_turn(assesment& grid, char char_input, grid_state& prev){
     string input_str;
-    cout << "Player input(1-" << grid.get_grid().size() << "): ";
+    cout << "Player input(0-" << grid.get_grid().size()-1 << "): ";
     cin >> input_str;
-    int input = stoi(input_str)-1;
+    int input = stoi(input_str);
     if(input == -1){
         grid.get_grid_state() = prev;
         cout << grid.get_grid_state().to_string();
+        count_turns-=2;
         return player_turn(grid, char_input, prev);
     }
     else{
@@ -119,23 +123,37 @@ float player_turn(assesment& grid, char char_input, grid_state& prev){
     }
 
     int input_height = grid.get_grid_state().set_data(char_input, input);
-    float result = grid.utility(input, input_height);
-    cout << "result: " << result << endl;
+    bool result = grid.utility(input, input_height);
+    // cout << "result: " << result << endl;
     return result;
 }
 
-float ai_2_turn(assesment& grid){
+bool ai_X_turn(assesment& grid){
+    clock_t start;
+    double duration;
+    start = clock();
+
     int input = grid.build_state_space();
+
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    cout << "duration: " << duration << " second(s)" << endl;
     cout << "AI X input: " << input << endl;
     int input_height = grid.get_grid_state().set_data('X', input);
-    float result = grid.utility(input, input_height);
+    bool result = grid.utility(input, input_height);
     return result;
 }
 
-float oponent_turn(assesment& grid){
+bool ai_O_turn(assesment& grid){
+    clock_t start;
+    double duration;
+    start = clock();
+
     int input = grid.build_state_space();
+
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    cout << "duration: " << duration << " second(s)" << endl;
     cout << "AI O input: " << input << endl;
     int input_height = grid.get_grid_state().set_data('O', input);
-    float result = grid.utility(input, input_height);
+    bool result = grid.utility(input, input_height);
     return result;
 }

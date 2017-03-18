@@ -50,26 +50,7 @@ int main(int argc, char** argv){
             return 0;
         }
         
-        // board.heuristics(board.get_grid_state());
-        // board.build_state_space();
-        // cout << endl;
-        
-        /*
-        result = player_turn(board, 'O');
-        cout << board.get_grid_state().to_string();
-        if (result >= 1000){
-            cout << "O won!" << endl;
-            return 0;
-        }
-        else if(++count_turns >= height*width){
-            cout << "Its a tie!" << endl;
-            return 0;
-        }
-        // board.heuristics(board.get_grid_state());
-        board.build_state_space();
-        //*/
-        
-        // result = ai_O_turn(board); /*
+        result = ai_O_turn(board); /*
         result = player_turn(board, 'O', pre_state); //*/
         cout << board.get_grid_state().to_string();
         if (result){
@@ -80,7 +61,6 @@ int main(int argc, char** argv){
             cout << "Its a tie!" << endl;
             return 0;
         }
-        //*/
     }
     
 }

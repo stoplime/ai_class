@@ -14,9 +14,11 @@ namespace steffen_space{
     assesment::assesment(int width, int height, int connect, grid_state init_board)
     : state_space(init_board)
     {
+        assert(connect > 3);
         this->width = width;
         this->height = height;
         this->connect = connect;
+        ai_connect_weight = std::vector<float>(connect-2, 0);
         current_grid = init_board.copy();
         max_depth = 2;
         srand(time(NULL));
@@ -42,12 +44,9 @@ namespace steffen_space{
     void assesment::update_weights(){
         ai_weight = 1;
         opponent_weight = -connect;
-        ai_4_weight = 1000000;
-        opponent_4_weight = -100000;
-        ai_3_weight = connect*connect;
-        opponent_3_weight = -connect*connect*connect;
-        ai_2_weight = 1;
-        opponent_2_weight = -connect;
+        for (int i = 0; i < connect-2; i++){
+            ai_connect_weight[i] = i*connect;
+        }
     }
     
     bool assesment::utility(int x, int y){
@@ -207,30 +206,21 @@ namespace steffen_space{
                 }// end of filter iteration
                 // check for four in a row
                 if(filter_value == connect*ai_weight){
-                    total_value += ai_4_weight;
                     std::cout << "ERROR: utility not catch 4 in row" << std::endl;
-                    return total_value;
+                    return 1000000;
                 }
                 else if(filter_value == connect*opponent_weight){
-                    total_value += opponent_4_weight;
                     std::cout << "ERROR: utility not catch 4 in row" << std::endl;
-                    return total_value;
+                    return -100000;
                 }
-                // check for three in a row
-                if(filter_value == (connect-1)*ai_weight){
-                    total_value += ai_3_weight;
+                for (int connect_iter = 0; connect_iter < connect-2; connect_iter++){
+                    if (filter_value == (connect-(connect_iter+1))*ai_weight){
+                        total_value += ai_connect_weight[connect_iter];
+                    }
+                    else if (filter_value == (connect-(connect_iter+1))*opponent_weight){
+                        total_value += ai_connect_weight[connect_iter]*(-connect);
+                    }
                 }
-                else if(filter_value == (connect-1)*opponent_weight){
-                    total_value += opponent_3_weight;
-                }
-                // check for two in a row
-                if(filter_value == (connect-2)*ai_weight){
-                    total_value += ai_2_weight;
-                }
-                else if(filter_value == (connect-2)*opponent_weight){
-                    total_value += opponent_2_weight;
-                }
-                // total_value += filter_value;
             }
         }// end of grid iteration
         return total_value;
@@ -289,7 +279,7 @@ namespace steffen_space{
             if(mid+index_variance < width){
                 children_order[i] = mid+index_variance;
             }
-            if(mid-index_variance >= 0){
+            if(mid-index_variance >= 0 && i+1 < width){
                 children_order[i+1] = mid-index_variance;
             }
         }
@@ -359,7 +349,13 @@ namespace steffen_space{
         }
         grid->set_score(minimax_thresh);
         if (minimax_child == -1){
-            minimax_child = rand() % connect;
+            bool invalid = true;
+            while(invalid){
+                minimax_child = rand() % connect;
+                if(grid->get_height_empty(minimax_child) != -1){
+                    invalid = false;
+                }
+            }
         }
         return minimax_child;
     }

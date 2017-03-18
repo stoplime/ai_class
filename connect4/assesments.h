@@ -24,12 +24,7 @@ namespace steffen_space{
         // heuristic weights
         int ai_weight = 1;
         int opponent_weight = -10;
-        float ai_4_weight = 100;
-        float opponent_4_weight = -1000;
-        float ai_3_weight = 1;
-        float opponent_3_weight = -10;
-        float ai_2_weight = 0.1;
-        float opponent_2_weight = -1;
+        std::vector<float> ai_connect_weight; 
 
         // debug
         int iterations = 0;

@@ -16,7 +16,7 @@ namespace steffen_space{
     {}
     
     grid_state::grid_state(int width, int height, float score, int input)
-    : grid(width, std::vector<char>(height,'.'))
+    : grid(width, std::vector<char>(height,'.')), grid_heights(width, 0)
     {
         this->width = width;
         this->height = height;
@@ -24,19 +24,25 @@ namespace steffen_space{
         this->input = input;
     }
 
-    
-    grid_state grid_state::copy(){
-        grid_state new_grid_state(width, height, score, input);
-        new_grid_state.grid = grid;
-        return new_grid_state;
+    grid_state::grid_state(const grid_state& gt)
+    : grid(gt.grid), grid_heights(gt.grid_heights)
+    {
+        this->width = gt.width;
+        this->height = gt.height;
+        this->score = gt.score;
+        this->input = gt.input;
     }
-
     
+    // grid_state grid_state::copy(){
+    //     grid_state new_grid_state(width, height, score, input);
+    //     new_grid_state.grid = grid;
+    //     return new_grid_state;
+    // }
+
     std::vector< std::vector<char> >& grid_state::get_grid(){
         return grid;
     }
 
-    
     int grid_state::set_data(char value, int x){
         int input_value = 0;
         if(value == 'O'){
@@ -48,7 +54,6 @@ namespace steffen_space{
         return set_data(input_value, x);
     }
 
-    
     int grid_state::set_data(int value, int x){
         if(x < width && x >= 0){
             int y = this->get_height_empty(x);
@@ -65,13 +70,13 @@ namespace steffen_space{
                         break;
                 }
                 this->input = x;
+                grid_heights[x]++;
             }
             return y;
         }
         return -1;
     }
 
-    
     float grid_state::get_score(){
         return score;
     }
@@ -80,7 +85,6 @@ namespace steffen_space{
         score = value;
     }
 
-    
     int grid_state::get_input(){
         return input;
     }
@@ -89,23 +93,14 @@ namespace steffen_space{
         input = value;
     }
 
-    
     int grid_state::get_height_empty(int x){
         int y = -1;
-        if(x < 0 || x >= width){
-            return -1;
-        }
-        for (int i = 0; i < height; i++)
-        {
-            if(grid[x][i] == '.'){
-                y = i;
-                break;
-            }
+        if(grid_heights[x] < height){
+            y = grid_heights[x];
         }
         return y;
     }
 
-    
     std::string grid_state::to_string(){
         std::string output = "";
         for (int j = height-1; j >= 0; --j)

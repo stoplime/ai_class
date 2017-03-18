@@ -19,7 +19,7 @@ namespace steffen_space{
         this->height = height;
         this->connect = connect;
         ai_connect_weight = std::vector<float>(connect-2, 0);
-        current_grid = init_board.copy();
+        current_grid = init_board;
         max_depth = 2;
         srand(time(NULL));
         update_weights();
@@ -286,8 +286,7 @@ namespace steffen_space{
         // build children
         for (int index = 0; index < width; index++){
             int i = children_order[index];
-            grid_state* temp = new grid_state();
-            *temp = grid->copy();
+            grid_state* temp = new grid_state(*grid);
             int y = temp->set_data(turn, i);
             int x = temp->get_input();
             if(y == -1){
@@ -349,12 +348,14 @@ namespace steffen_space{
         }
         grid->set_score(minimax_thresh);
         if (minimax_child == -1){
-            bool invalid = true;
-            while(invalid){
-                minimax_child = rand() % connect;
-                if(grid->get_height_empty(minimax_child) != -1){
-                    invalid = false;
+            std::vector<int> possible(1, -1);
+            for (int i = 0; i < width; i++){
+                if(grid->get_height_empty(i) != -1){
+                    possible.push_back(i);
                 }
+            }
+            if(possible.size() > 1){
+                minimax_child = possible[(rand() % (possible.size()-1))+1];
             }
         }
         return minimax_child;

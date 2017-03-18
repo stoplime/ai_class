@@ -10,6 +10,7 @@ namespace steffen_space{
     {
     private:
         std::vector< std::vector<char> > grid;
+        std::vector<int> grid_heights;
         int width;
         int height;
         float score;
@@ -18,8 +19,8 @@ namespace steffen_space{
         grid_state();
         grid_state(int width, int height);
         grid_state(int width, int height, float score, int input);
+        grid_state(const grid_state& gt);
         //~grid_state();
-        grid_state copy();
 
         /// Encapsulation
         std::vector< std::vector<char> >& get_grid();

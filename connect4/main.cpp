@@ -31,7 +31,7 @@ bool ai_O_turn(assesment& grid);
 // main
 int main(int argc, char** argv){
     get_user_settings();
-    assesment board(width, height, connect, 'O');
+    assesment board(width, height, connect);
     board.set_max_depth(ai_depth);
     cout << board.get_max_depth() << endl;
     cout << board.get_grid_state().to_string();
@@ -69,7 +69,7 @@ int main(int argc, char** argv){
         board.build_state_space();
         //*/
         
-        result = ai_O_turn(board); /*
+        // result = ai_O_turn(board); /*
         result = player_turn(board, 'O', pre_state); //*/
         cout << board.get_grid_state().to_string();
         if (result){
@@ -133,7 +133,7 @@ bool ai_X_turn(assesment& grid){
     double duration;
     start = clock();
 
-    int input = grid.build_state_space();
+    int input = grid.build_state_space('X');
 
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     cout << "duration: " << duration << " second(s)" << endl;
@@ -148,7 +148,7 @@ bool ai_O_turn(assesment& grid){
     double duration;
     start = clock();
 
-    int input = grid.build_state_space();
+    int input = grid.build_state_space('O');
 
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
     cout << "duration: " << duration << " second(s)" << endl;

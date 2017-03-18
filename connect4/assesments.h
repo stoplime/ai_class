@@ -18,7 +18,6 @@ namespace steffen_space{
         int connect;
 
         grid_state current_grid;
-        char ai_piece;
         tree_node<grid_state> state_space;
         int max_depth;
 
@@ -36,8 +35,8 @@ namespace steffen_space{
         int iterations = 0;
 
     public:
-        assesment(int width, int height, int connect, char ai_piece, grid_state init_board);
-        assesment(int width, int height, int connect, char ai_piece);
+        assesment(int width, int height, int connect, grid_state init_board);
+        assesment(int width, int height, int connect);
         //~assesment();
 
         std::vector< std::vector<char> >& get_grid();
@@ -51,11 +50,11 @@ namespace steffen_space{
         bool utility(grid_state input_grid, int x, int y);
         bool utility(int x, int y);
     
-        float heuristics(grid_state input_grid);
-        float filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter);
+        float heuristics(grid_state input_grid, char ai_piece);
+        float filter_assesment(std::vector< std::vector<char> > grid, std::vector< std::vector<int> > filter, char ai_piece);
 
-        int build_state_space();
-        int build_state_space_recursive(tree_node<grid_state>* node, int current_depth, float alpha, float beta);
+        int build_state_space(char ai_piece);
+        int build_state_space_recursive(tree_node<grid_state>* node, int current_depth, char ai_piece, float alpha, float beta);
 
         int get_max_depth();
         void set_max_depth(int value);

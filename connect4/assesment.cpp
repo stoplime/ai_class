@@ -345,6 +345,10 @@ namespace steffen_space{
             if (alpha >= beta){
                 break;
             }
+            // delete new_child;
+            // new_child = NULL;
+            delete temp;
+            temp = NULL;
         }
         grid->set_score(minimax_thresh);
         if (minimax_child == -1){

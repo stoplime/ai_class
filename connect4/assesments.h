@@ -24,13 +24,14 @@ namespace steffen_space{
         // heuristic weights
         int ai_weight = 1;
         int opponent_weight = -10;
-        std::vector<float> ai_connect_weight; 
+        std::vector<float> ai_connect_weight;
+        std::vector<float> opponents_connect_weight;
 
         // debug
         int iterations = 0;
 
     public:
-        assesment(int width, int height, int connect, grid_state init_board);
+        assesment(int width, int height, int connect, grid_state init_board, int weights);
         assesment(int width, int height, int connect);
         //~assesment();
 
@@ -54,7 +55,7 @@ namespace steffen_space{
         int get_max_depth();
         void set_max_depth(int value);
 
-        void update_weights();
+        void update_weights(int type);
     };
 }
 

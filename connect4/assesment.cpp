@@ -8,10 +8,10 @@
 namespace steffen_space{
     
     assesment::assesment(int width, int height, int connect)
-    : assesment(width, height, connect, grid_state(width, height))
+    : assesment(width, height, connect, grid_state(width, height), 0)
     {}
 
-    assesment::assesment(int width, int height, int connect, grid_state init_board)
+    assesment::assesment(int width, int height, int connect, grid_state init_board, int weights)
     : state_space(init_board)
     {
         assert(connect > 3);
@@ -19,10 +19,11 @@ namespace steffen_space{
         this->height = height;
         this->connect = connect;
         ai_connect_weight = std::vector<float>(connect-2, 0);
+        opponents_connect_weight = std::vector<float>(connect-2, 0);
         current_grid = init_board;
         max_depth = 2;
         srand(time(NULL));
-        update_weights();
+        update_weights(weights);
     }
 
     int assesment::get_max_depth(){
@@ -41,11 +42,35 @@ namespace steffen_space{
         return current_grid;
     }
 
-    void assesment::update_weights(){
+    void assesment::update_weights(int type){
         ai_weight = 1;
         opponent_weight = -connect;
-        for (int i = 0; i < connect-2; i++){
-            ai_connect_weight[i] = i*connect;
+        switch (type)
+        {
+        case 1:
+            for (int i = 0; i < connect-2; i++){
+                ai_connect_weight[i] = i*connect*connect;
+                opponents_connect_weight[i] = -i*connect;
+            }
+            break;
+        case 2:
+            for (int i = 0; i < connect-2; i++){
+                ai_connect_weight[i] = i+1;
+                opponents_connect_weight[i] = (i+1)*(-connect);
+            }
+            break;
+        case 3:
+            for (int i = 0; i < connect-2; i++){
+                ai_connect_weight[i] = (i+1)*(connect);
+                opponents_connect_weight[i] = -(i+1);
+            }
+            break;
+        default:
+            for (int i = 0; i < connect-2; i++){
+                ai_connect_weight[i] = i*connect;
+                opponents_connect_weight[i] = i*connect*(-connect);
+            }
+            break;
         }
     }
     
@@ -218,7 +243,7 @@ namespace steffen_space{
                         total_value += ai_connect_weight[connect_iter];
                     }
                     else if (filter_value == (connect-(connect_iter+1))*opponent_weight){
-                        total_value += ai_connect_weight[connect_iter]*(-connect);
+                        total_value += opponents_connect_weight[connect_iter]; //*/ai_connect_weight[connect_iter]*(-connect);
                     }
                 }
             }
@@ -345,10 +370,9 @@ namespace steffen_space{
             if (alpha >= beta){
                 break;
             }
+            // new_child->set_data_pointer(NULL);
             // delete new_child;
-            // new_child = NULL;
-            delete temp;
-            temp = NULL;
+            // delete temp;
         }
         grid->set_score(minimax_thresh);
         if (minimax_child == -1){

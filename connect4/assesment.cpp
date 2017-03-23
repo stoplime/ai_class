@@ -45,30 +45,31 @@ namespace steffen_space{
     void assesment::update_weights(int type){
         ai_weight = 1;
         opponent_weight = -connect;
+        int index = 0;
         switch (type)
         {
         case 1:
-            for (int i = 0; i < connect-2; i++){
-                ai_connect_weight[i] = i*connect*connect;
-                opponents_connect_weight[i] = -i*connect;
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = i*connect*connect;
+                opponents_connect_weight[index] = -i*connect;
             }
             break;
         case 2:
-            for (int i = 0; i < connect-2; i++){
-                ai_connect_weight[i] = i+1;
-                opponents_connect_weight[i] = (i+1)*(-connect);
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = i+1;
+                opponents_connect_weight[index] = (i+1)*(-connect);
             }
             break;
         case 3:
-            for (int i = 0; i < connect-2; i++){
-                ai_connect_weight[i] = (i+1)*(connect);
-                opponents_connect_weight[i] = -(i+1);
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = (i+1)*(connect);
+                opponents_connect_weight[index] = -(i+1);
             }
             break;
         default:
-            for (int i = 0; i < connect-2; i++){
-                ai_connect_weight[i] = i*connect;
-                opponents_connect_weight[i] = i*connect*(-connect);
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = i*connect;
+                opponents_connect_weight[index] = i*connect*(-connect);
             }
             break;
         }

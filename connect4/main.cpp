@@ -39,10 +39,11 @@ int main(int argc, char** argv){
     cout << board.get_max_depth() << endl;
     cout << board.get_grid_state().to_string();
     pre_state = board.get_grid_state();
+    board.update_weights(ai_weight1);
     while (1)
     {
-        board.update_weights(ai_weight1);
-        // bool result = player_turn(board, 'X', pre_state); /*
+        // board.update_weights(ai_weight1);
+        bool result = player_turn(board, 'X', pre_state); /*
         bool result = ai_X_turn(board); //*/
         cout << board.get_grid_state().to_string();
         if (result){
@@ -54,7 +55,7 @@ int main(int argc, char** argv){
             return 0;
         }
         
-        board.update_weights(ai_weight2);
+        // board.update_weights(ai_weight2);
         result = ai_O_turn(board); /*
         result = player_turn(board, 'O', pre_state); //*/
         cout << board.get_grid_state().to_string();
@@ -76,13 +77,13 @@ void get_user_settings(){
     string board_height;
     string connet_length;
     string ai_depth_str;
-    string ai_weight1_str;
-    string ai_weight2_str;
+    // string ai_weight1_str;
+    // string ai_weight2_str;
     
-    cout << "AI 1 Weight:";
-    cin >> ai_weight1_str;
-    cout << "AI 2 Weight:";
-    cin >> ai_weight2_str;
+    // cout << "AI 1 Weight:";
+    // cin >> ai_weight1_str;
+    // cout << "AI 2 Weight:";
+    // cin >> ai_weight2_str;
     cout << "Width of board:";
     cin >> board_width;
     cout << "Height of board:";
@@ -96,8 +97,8 @@ void get_user_settings(){
     height = stoi(board_height);
     connect = stoi(connet_length);
     ai_depth = stoi(ai_depth_str);
-    ai_weight1 = stoi(ai_weight1_str);
-    ai_weight2 = stoi(ai_weight2_str);
+    // ai_weight1 = stoi(ai_weight1_str);
+    // ai_weight2 = stoi(ai_weight2_str);
 }
 
 bool player_turn(assesment& grid, char char_input, grid_state& prev){

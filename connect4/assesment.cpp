@@ -373,7 +373,7 @@ namespace steffen_space{
             }
             // new_child->set_data_pointer(NULL);
             // delete new_child;
-            // delete temp;
+            delete temp;
         }
         grid->set_score(minimax_thresh);
         if (minimax_child == -1){

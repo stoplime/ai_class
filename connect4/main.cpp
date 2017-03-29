@@ -40,14 +40,14 @@ int main(int argc, char** argv){
     // cout << board.get_grid_state().to_string();
     pre_state = board.get_grid_state();
     int bound_weight = 0;
-    int weight_types = 7;
+    int weight_types = 8;
     // for (int i = 0; i < weight_types; i++){
     //     cout << "weight " << i << endl;
     //     board.update_weights(i);
     // }
     
-    for (int d1 = 2; d1 < 3; d1++){
-        for (int d2 = 2; d2 < 3; d2++){
+    for (int d1 = 2; d1 < 7; d1++){
+        for (int d2 = 2; d2 < 7; d2++){
             // cout << "depth: " << d1 << ", " << d2 << endl;
             for (int i = bound_weight; i < weight_types; i++){
                 for (int j = bound_weight; j < weight_types; j++){

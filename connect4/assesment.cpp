@@ -112,6 +112,16 @@ namespace steffen_space{
             break;
         case 6:
             for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = pow(connect, i);
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = pow(connect, i)*(-1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
+            }
+            break;
+        case 7:
+            for (int i = connect-3; i >= 0 ; --i, ++index){
                 ai_connect_weight[index] = i+1;
                 if(draw)
                     std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
@@ -370,6 +380,7 @@ namespace steffen_space{
             int y = temp->set_data(turn, i);
             int x = temp->get_input();
             if(y == -1){
+                delete temp;
                 continue;
             }
 
@@ -423,6 +434,8 @@ namespace steffen_space{
                 }
             }
             if (alpha >= beta){
+                delete new_child;
+                delete temp;
                 break;
             }
             // new_child->set_data_pointer(NULL);

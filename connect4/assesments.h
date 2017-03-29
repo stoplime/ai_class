@@ -33,7 +33,7 @@ namespace steffen_space{
     public:
         assesment(int width, int height, int connect, grid_state init_board, int weights);
         assesment(int width, int height, int connect);
-        //~assesment();
+        // ~assesment();
 
         std::vector< std::vector<char> >& get_grid();
         grid_state& get_grid_state();

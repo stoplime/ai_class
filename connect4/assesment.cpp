@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 namespace steffen_space{
     
@@ -46,24 +47,77 @@ namespace steffen_space{
         ai_weight = 1;
         opponent_weight = -connect;
         int index = 0;
+        bool draw = false;
         switch (type)
         {
+        case 0:
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = pow(connect, i);
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = pow(connect, i)*(-connect);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
+            }
+            break;
         case 1:
             for (int i = connect-3; i >= 0 ; --i, ++index){
-                ai_connect_weight[index] = i*connect*connect;
-                opponents_connect_weight[index] = -i*connect;
+                ai_connect_weight[index] = pow(connect, i)*connect;
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = pow(connect, i)*-1;
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
             }
             break;
         case 2:
             for (int i = connect-3; i >= 0 ; --i, ++index){
                 ai_connect_weight[index] = i+1;
-                opponents_connect_weight[index] = (i+1)*(-connect);
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = (i+2)*(-1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
             }
             break;
         case 3:
             for (int i = connect-3; i >= 0 ; --i, ++index){
-                ai_connect_weight[index] = (i+1)*(connect);
+                ai_connect_weight[index] = (i+2);
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
                 opponents_connect_weight[index] = -(i+1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
+            }
+            break;
+        case 4:
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = 2*i+1;
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = (2*i+2)*(-1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
+            }
+            break;
+        case 5:
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = (2*i+2);
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = -(2*i+1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
+            }
+            break;
+        case 6:
+            for (int i = connect-3; i >= 0 ; --i, ++index){
+                ai_connect_weight[index] = i+1;
+                if(draw)
+                    std::cout << "ai_connect_weight[" << i << "]: " << ai_connect_weight[index] << std::endl;
+                opponents_connect_weight[index] = (i+1)*(-1);
+                if(draw)
+                    std::cout << "opponents_connect_weight[" << i << "]: " << opponents_connect_weight[index] << std::endl;
             }
             break;
         default:
@@ -258,7 +312,7 @@ namespace steffen_space{
         state_space = tree_node<grid_state >(current_grid);
         // go through a depth first traversal building up the state_space
         int score = build_state_space_recursive(&state_space, 0, ai_piece, -10000000000, 10000000000);
-        std::cout << "iterations: " << iterations << std::endl;
+        // std::cout << "iterations: " << iterations << std::endl;
         return score;
     }
 
@@ -372,7 +426,7 @@ namespace steffen_space{
                 break;
             }
             // new_child->set_data_pointer(NULL);
-            // delete new_child;
+            delete new_child;
             delete temp;
         }
         grid->set_score(minimax_thresh);

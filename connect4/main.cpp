@@ -45,6 +45,43 @@ int main(int argc, char** argv){
     //     cout << "weight " << i << endl;
     //     board.update_weights(i);
     // }
+
+    // bool result = false;
+    // board.update_weights(7);
+    // // board.set_max_depth(7);
+    // while (!result){
+    //     // board.update_weights(i);
+    //     // board.set_max_depth(d1);
+    //     // bool result = player_turn(board, 'X', pre_state); /*
+    //     result = ai_X_turn(board); //*/
+    //     cout << board.get_grid_state().to_string();
+    //     if (result){
+    //         cout << "✗ won!" << endl;
+    //         continue;
+    //     }
+    //     else if(++count_turns >= height*width){
+    //         cout << "Its a tie!" << endl;
+    //         result = true;
+    //         continue;
+    //     }
+        
+    //     // board.update_weights(j);
+    //     // board.set_max_depth(d2);
+    //     // result = ai_O_turn(board); /*
+    //     result = player_turn(board, 'O', pre_state); //*/
+    //     cout << board.get_grid_state().to_string();
+    //     if (result){
+    //         cout << "O won!" << endl;
+    //         continue;
+    //     }
+    //     else if(++count_turns >= height*width){
+    //         cout << "Its a tie!" << endl;
+    //         result = true;
+    //         continue;
+    //     }
+    // }// end game
+    // board.get_grid_state() = grid_state(width, height);
+    // count_turns = 0;
     
     for (int d1 = 2; d1 < 7; d1++){
         for (int d2 = 2; d2 < 7; d2++){
@@ -100,11 +137,11 @@ int main(int argc, char** argv){
 
 // function implementations
 void get_user_settings(){
-    string board_width;
-    string board_height;
-    string connet_length;
-    string ai_depth1_str;
-    string ai_depth2_str;
+    // string board_width;
+    // string board_height;
+    // string connet_length;
+    // string ai_depth1_str;
+    // string ai_depth2_str;
     // string ai_weight1_str;
     // string ai_weight2_str;
     
@@ -112,18 +149,18 @@ void get_user_settings(){
     // cin >> ai_weight1_str;
     // cout << "AI 2 Weight:";
     // cin >> ai_weight2_str;
-    /*
-    cout << "Width of board:";
-    cin >> board_width;
-    cout << "Height of board:";
-    cin >> board_height;
-    cout << "Connect length:";
-    cin >> connet_length;
-    cout << "AI depth1:";
-    cin >> ai_depth1_str;
-    cout << "AI depth2:";
-    cin >> ai_depth2_str;
-    */
+    
+    // cout << "Width of board:";
+    // cin >> board_width;
+    // cout << "Height of board:";
+    // cin >> board_height;
+    // cout << "Connect length:";
+    // cin >> connet_length;
+    // cout << "AI depth1:";
+    // cin >> ai_depth1_str;
+    // cout << "AI depth2:";
+    // cin >> ai_depth2_str;
+    //*/
 
     // width = stoi(board_width);
     // height = stoi(board_height);

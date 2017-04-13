@@ -12,9 +12,11 @@ trainFile = os.path.join(PATH, "optdigits_train.txt")
 testFile = os.path.join(PATH, "optdigits_test.txt")
 
 class neural_net(object):
-    def __init__(self, hidden_layers=[64,32,16]):
+    def __init__(self, hidden_layers=[32]):
         self.input_size = 64
         self.output_size = 10
+
+        np.random.seed(10)
 
         self.layers = []
         self.layers.append(self.input_size)
@@ -28,12 +30,12 @@ class neural_net(object):
         self.inputA = []
         self.outputZ = []
         for i in range(self.num_layers-1):
-            self.weights.append(np.random.rand(self.layers[i]+1, self.layers[i+1])*0.0001)
+            self.weights.append(np.random.rand(self.layers[i]+1, self.layers[i+1])*1e-3)
             self.inputA.append(0)
             self.outputZ.append(0)
         # for final output
         self.inputA.append(0)
-    
+
     def forward(self, input_x):
         # input_x has shape (# of images, image data)
         if input_x.ndim == 1:
@@ -50,47 +52,78 @@ class neural_net(object):
             self.inputA[i+1] = self.activation(self.outputZ[i])
         outputY = self.inputA[self.num_layers-1]
         return outputY
-    
+
     def activation(self, input_z):
         # sigmoid
         return 1/(1+np.exp(-input_z))
-    
+
     def activation_prime(self, input_z):
         # sigmoid
         return np.exp(-input_z)/((1+np.exp(-input_z))**2)
 
-    def loss_function(self, input_x, label_y, delta=0.1):
+    def loss_function_forward(self, input_x):
         # softmax
         # input_x.shape = (# of images, image data)
         # label_y.shape = (# of images, )
         # print ("input_x: ",input_x.shape)
         # print ("label_y: ",label_y.shape)
 
-        self.dW = np.zeros_like(self.weights)
+        ''' self.outputY.shape = (# of images, self.output_size)'''
+        self.outputY = self.forward(input_x)
+        # print ("outputY: ",self.outputY.shape)
+        # print ("correct: ",correct.shape)
+        ''' unnormalized_probabilities.shape = (# of images, 10)'''
+        unnormalized_probabilities = np.exp(self.outputY)
 
-        ''' self.outputY.shape = (# of images, 10)'''
+        probabilities = unnormalized_probabilities/np.sum(unnormalized_probabilities)
+        # print("probabilities", probabilities.shape)
+        probabilities = -np.log(probabilities)
+
+        return probabilities + self.regularization()
+
+    def loss_function(self, input_x, label_y):
+        # softmax
+        # input_x.shape = (# of images, image data)
+        # label_y.shape = (# of images, )
+        # print ("input_x: ",input_x.shape)
+        # print ("label_y: ",label_y.shape)
+
+        # self.softmax_dW = np.zeros((input_x.shape[0], self.output_size))
+
+        ''' self.outputY.shape = (# of images, self.output_size)'''
         self.outputY = self.forward(input_x)
         # print ("outputY: ",self.outputY.shape)
         ''' correct.shape = (# of images, 1)'''
         # print("label_y[:,0]: ", label_y[:,0].shape)
-        correct = self.outputY[np.arange(label_y.shape[0]),label_y[:,0]]
-        correct = correct.reshape((correct.shape[0],1))
+        correct = self.outputY[np.arange(label_y.shape[0]), label_y[:, 0]]
+        correct = correct.reshape((correct.shape[0], 1))
         # print ("correct: ",correct.shape)
         ''' unnormalized_probabilities.shape = (# of images, 10)'''
         unnormalized_probabilities = np.exp(self.outputY)
         correct_exp = np.exp(correct)
-        ''' probability.shape = (# of images, 1)'''
-        probability = correct_exp/np.sum(unnormalized_probabilities)
-        probability = probability.reshape((probability.shape[0],1))
-        print("probability: ",probability.shape)
-        return probability + self.regularization()
+        # print ("correct_exp: ",correct_exp.shape)
+        ''' correct_probability.shape = (# of images, 1)'''
+        correct_probability = correct_exp/np.sum(unnormalized_probabilities)
+        correct_probability = correct_probability.reshape((correct_probability.shape[0], 1))
+        # print("correct_probability: ", correct_probability.shape)
+
+        probabilities = unnormalized_probabilities/np.sum(unnormalized_probabilities)
+        # print("probabilities", probabilities.shape)
+        probabilities = -np.log(probabilities)
+
+        softmax_dW = -1/probabilities
+        self.softmax_dW = softmax_dW * -np.exp(self.outputY)*correct_exp/np.sum(np.square(unnormalized_probabilities))
+        self.softmax_dW[np.arange(label_y.shape[0]), label_y[:, 0]] = (softmax_dW * correct_probability)[:,0]
+        # print("self.softmax_dW ", self.softmax_dW.shape) 
+
+        return probabilities + self.regularization()
 
     def regularization(self):
         total = 0
         for i in range(len(self.weights)):
             total += np.sum(np.square(self.weights[i]))
         return total
-    
+
     def get_gradient(self, losses):
         # losses.shape = (batch_size, )
 
@@ -105,41 +138,69 @@ class neural_net(object):
         for i in reversed(range(self.num_layers-1)):
             if first:
                 first = False
+                # print("deltas[i+1] ", deltas[i+1].shape)
+                # print("self.activation_prime(self.outputZ[i]) ", \
+                # self.activation_prime(self.outputZ[i]).shape)
                 deltas[i] = deltas[i+1]*self.activation_prime(self.outputZ[i])
             else:
-                deltas[i] = np.dot(deltas[i+1], self.weights[i+1].T)*self.activation_prime(self.outputZ[i])
+                # print("deltas[i+1] ", deltas[i+1].shape)
+                # print("self.weights[i+1].T ", self.weights[i+1].T.shape)
+                # print("self.outputZ[i] ", self.outputZ[i].shape)
+                active = self.activation_prime(self.outputZ[i])
+                deltas[i] = np.dot(deltas[i+1], self.weights[i+1].T)[:,:-1] * active
+                # print("self.activation_prime(self.outputZ[i]) ", \
+                # np.insert(active, active.shape[1], 1, axis=1)
+                # print("deltas", deltas[i][10,10])
+                # print("inputA", self.inputA[i][10,10])
             weights_prime[i] = np.dot(self.inputA[i].T, deltas[i])
+            # print("weights_prime[i] ", weights_prime[i].shape)
         return weights_prime
 
     def train(self, train_input, train_output, epoch, batch_size):
-        learning_rate = -0.001
+        learning_rate = .001
         for i in range(epoch):
             # delta_y = self.forward(train_input) - train_output
-            print("epoch: ", i," loss: ", np.average(self.loss_function(train_input, train_output)))
+            print("epoch: {} loss: {}".format(i, np.average(self.loss_function_forward(train_input))), end="\r")
+
+            # print("weight test: ", self.weights[0][10,10])
+
             max_size = train_input.shape[0]
             for j in range(ceil(max_size / batch_size)):
                 begin = batch_size*j
                 end = batch_size*(j+1)
                 if end > max_size:
                     end = max_size
-                for k in range(batch_size):
-                    # delta_y.shape = (batch_size, )
-                    delta_y = self.loss_function(train_input[begin:end], train_output[begin:end])
-                    print("delta_y: ", delta_y.shape)
-                    dW = self.get_gradient(delta_y)
-                    for l in range(self.num_layers-1):
-                        # print("dW[",l,"]: ", dW[l].shape)
-                        self.weights[l] += dW[l]*learning_rate
-        delta_y = self.forward(train_input) - train_output
-        print("average loss: ", np.average(self.loss_function(delta_y)))
+                # delta_y.shape = (batch_size, 1)
+                delta_y = self.loss_function(train_input[begin:end], train_output[begin:end])
+                # print("delta_y: ", delta_y.shape)
+                # batch_loss_bool = np.zeros((batch_loss.shape[0], 10))
+                # batch_loss_bool[np.arange(batch_loss.shape[0]), batch_loss[:,0]] = 1
+                # batch_delta = np.where(batch_loss_bool == 1, np.ones(batch_loss_bool.shape)-sco, )
+                dW = self.get_gradient(self.softmax_dW)
+                for k in range(self.num_layers-1):
+                    # print("dW[",k,"]: ", dW[k].shape)
+                    # print("weights[",k,"]: ", self.weights[k].shape)
+                    # print("delta test:", (dW[k]*learning_rate)[0,0])
+                    delta_dw = self.weights[k]*dW[k]*learning_rate
+                    # if k == 0 and begin == 0: print(delta_dw[10,10], "\t", self.weights[k][10,10])
+                    self.weights[k] -= delta_dw
+            # print("weight test: ", self.weights[0][10,10])
+        # delta_y = self.forward(train_input) - train_output
+        print("epoch: {} loss: {}".format(epoch, np.average(self.loss_function_forward(train_input))))
+        print("average loss: ", np.average(self.loss_function_forward(train_input)))
 
     def save_weights(self, name):
         with open(os.path.join(PATH, "models", "model_"+name+".json"), 'w') as weight_file:
-            json.dump(self.weights, weight_file, indent=4)
+            weight_list = []
+            for i in range(self.num_layers-1):
+                weight_list.append(self.weights[i].tolist())
+            json.dump(weight_list, weight_file, indent=4)
 
     def load_weights(self, name, prefix="model_"):
         with open(os.path.join(PATH, "models", prefix+name+".json")) as weight_file:
-            self.weights = json.load(weight_file)
+            weight_list = json.load(weight_file)
+            for i in range(self.num_layers-1):
+                self.weights[i] = np.asarray(weight_list[i])
 
 '''
 Grabs the data and runs any preprocessing
@@ -150,8 +211,8 @@ with open(trainFile, 'r') as train_data:
         for j in range(len(data[i])):
             data[i][j] = int(data[i][j])
     # print (len(data))
-    trainX = np.asarray(data)[:,:-1]
-    trainY = np.transpose(np.asarray(data)[:,-1:])
+    trainX = np.asarray(data)[:, :-1]
+    trainY = np.transpose(np.asarray(data)[:, -1:])
     trainY = np.reshape(trainY, (-1, 1))
     # print (trainY)
 
@@ -171,7 +232,8 @@ print("shape of trainX: ", trainX.shape)
 print("shape of trainY: ", trainY.shape)
 print("shape of testX: ", testX.shape)
 print("shape of testY: ", testY.shape)
-# nn.train(trainX, trainY, 10, 100)
+nn.train(trainX, trainY, 1000, 100)
+# nn.load_weights("test0")
 
 # plt.imshow(np.reshape(trainX[5], (8,8)))
 # plt.show()
@@ -180,8 +242,10 @@ def show_forward(ann, test_input, test_output, sample_size):
     fig = plt.figure()
     # fig.subtitle("Random samples from forward pass of the Test data", fontsize=16)
     fig.set_figwidth(sample_size)
-    results = ann.forward(test_input)
+    results = ann.loss_function_forward(test_input)
     predict = np.argmax(results, axis=1)
+    # print("results: ", results)
+    # print("predict", predict.shape)
     samples = random.sample(range(len(test_input)), sample_size)
     sample_results = results[samples]
     sample_predict = predict[samples]
@@ -200,3 +264,4 @@ def show_forward(ann, test_input, test_output, sample_size):
     plt.show()
 
 show_forward(nn, testX, testY, 5)
+# nn.save_weights("test0")

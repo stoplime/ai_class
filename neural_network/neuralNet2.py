@@ -95,7 +95,7 @@ class nn_layer(object):
         return self.weights
 
 class neural_net(object):
-    def __init__(self, hidden_layers=[64,32,16]):
+    def __init__(self, hidden_layers=[32]):
         self.input_size = 64
         self.output_size = 10
         layer_dims = [self.input_size]
@@ -149,6 +149,8 @@ class neural_net(object):
 
     def softmax(self, input_z):
         # input_z.shape = (# images, output_size)
+        print("softmax denom", np.sum(input_z)) 
+        # input_z is going far into the negatives
         return np.exp(input_z)/np.sum(np.exp(input_z))
 
     def softmax_prime(self, label_y, correct_softmax):
@@ -180,6 +182,9 @@ class neural_net(object):
                 if end > max_size:
                     end = max_size
                 result = self.forward_function(train_input[begin:end])
+
+                # print("batch", j, "forward", result)
+                # print("softmax resilt", self.softmax_result[:,0:6])
                 self.backprop(train_label[begin:end], learning_rate)
         # delta_y = self.forward(train_input) - train_output
         self.forward_function(train_input)
@@ -229,6 +234,13 @@ nn = neural_net()
 # print("shape of trainY: ", trainY.shape)
 # print("shape of testX: ", testX.shape)
 # print("shape of testY: ", testY.shape)
+trainX -= 8
+trainX = trainX / 8
+testX -= 8
+testX = testX / 8
+
+# print(trainX[5])
+
 nn.train(trainX, trainY, 1000, 100)
 # nn.load_weights("test0")
 

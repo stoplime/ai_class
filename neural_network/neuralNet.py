@@ -59,7 +59,7 @@ class neural_net(object):
 
     def activation_prime(self, input_z):
         # sigmoid
-        return np.exp(-input_z)/((1+np.exp(-input_z))**2)
+        return self.activation(input_z)-((self.activation(input_z))**2)
 
     def loss_function_forward(self, input_x):
         # softmax
@@ -157,7 +157,7 @@ class neural_net(object):
         return weights_prime
 
     def train(self, train_input, train_output, epoch, batch_size):
-        learning_rate = .001
+        learning_rate = .9
         for i in range(epoch):
             # delta_y = self.forward(train_input) - train_output
             print("epoch: {} loss: {}".format(i, np.average(self.loss_function_forward(train_input))), end="\r")
@@ -232,7 +232,7 @@ print("shape of trainX: ", trainX.shape)
 print("shape of trainY: ", trainY.shape)
 print("shape of testX: ", testX.shape)
 print("shape of testY: ", testY.shape)
-nn.train(trainX, trainY, 1000, 100)
+nn.train(trainX, trainY, 100, 100)
 # nn.load_weights("test0")
 
 # plt.imshow(np.reshape(trainX[5], (8,8)))

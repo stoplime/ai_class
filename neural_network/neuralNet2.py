@@ -11,6 +11,8 @@ PATH = os.getcwd()
 trainFile = os.path.join(PATH, "optdigits_train.txt")
 testFile = os.path.join(PATH, "optdigits_test.txt")
 
+# np.random.seed(11)
+
 class nn_layer(object):
     
     def __init__(self, output_dim, input_dim=None, initial_weights=None):
@@ -18,7 +20,7 @@ class nn_layer(object):
         if initial_weights != None:
             self.weights = initial_weights
         elif input_dim != None:
-            self.weights = np.random.rand(input_dim + 1, output_dim) * 0.001
+            self.weights = 2*np.random.rand(input_dim + 1, output_dim) - 1
         else:
             self.has_weights = False
             self.weights = None
@@ -75,15 +77,23 @@ class nn_layer(object):
             # print("input_bias", self.input_bias.shape)
             # print("derivative", derivative.shape)
             # print("weights", self.weights.shape)
+
+            # activation_prime.shape = (# images, output_dim)
+            # input_bias.shape = (# images, input_dim)
+            # derivative.shape = (# images, output_dim)
+            # weights.shape = (input_dim, output_dim)
             
-            dw = np.dot(self.input_bias.T, self.activation_prime)
-            self.weights = self.weights - dw * learning_rate
+            # print("prime", dw.shape)
+            # print("dw", dw)
 
             weights_nobias = self.weights[:-1,:]
             # print("weights_nobias", weights_nobias.shape)
 
             self.gradient = np.dot(self.activation_prime * derivative, weights_nobias.T)
             # self.gradient *= derivative
+
+            dw = np.dot(self.input_bias.T, self.activation_prime)
+            self.weights = self.weights + dw * learning_rate
     
     def get_node_output(self):
         return self.node_output
@@ -93,6 +103,8 @@ class nn_layer(object):
 
     def get_weights(self):
         return self.weights
+        
+    
 
 class neural_net(object):
     def __init__(self, hidden_layers=[32]):
@@ -107,7 +119,7 @@ class neural_net(object):
         for i in range(len(layer_dims)-1):
             self.layers.append(nn_layer(layer_dims[i+1], input_dim=layer_dims[i]))
         # Set last layer to softmax (linear)
-        self.layers[len(self.layers)-1].set_activation(type="linear")
+        # self.layers[len(self.layers)-1].set_activation(type="linear")
 
     def forward_function(self, input_x):
         input_a = input_x
@@ -116,7 +128,10 @@ class neural_net(object):
             self.layers[i].forward(input_a)
             input_a = self.layers[i].get_node_output()
         # softmax
-        self.softmax_result = self.softmax(input_a)
+        # self.softmax_result = self.softmax(input_a)
+        # sigmoid
+        self.softmax_result = input_a
+
         max_index = self.softmax_result.argmax(axis=1)
         # max_index.shape = (# images,)
         return max_index
@@ -138,9 +153,14 @@ class neural_net(object):
         self.calculate_loss(label_y)
 
         # set gradient starting with the loss relative to softmax
-        self.gradient = -1/self.correct_softmax
+        # self.gradient = -1/self.correct_softmax
         # derivative of softmax
-        self.gradient = self.gradient.reshape((self.gradient.shape[0], 1)) * self.softmax_prime(label_y, self.correct_softmax)
+        # self.gradient = self.gradient.reshape((self.gradient.shape[0], 1)) * self.softmax_prime(label_y, self.correct_softmax)
+
+        goal = np.zeros((label_y.shape[0], 10))
+        goal[np.arange(label_y.shape[0]), label_y[:, 0]] = 1
+
+        self.gradient = goal - self.softmax_result
 
         # self.gradient.shape = (# images, output_size)
         for i in reversed(range(len(self.layers)-1)):
@@ -149,7 +169,7 @@ class neural_net(object):
 
     def softmax(self, input_z):
         # input_z.shape = (# images, output_size)
-        print("softmax denom", np.sum(input_z)) 
+        # print("softmax denom", np.sum(input_z)) 
         # input_z is going far into the negatives
         return np.exp(input_z)/np.sum(np.exp(input_z))
 
@@ -167,10 +187,37 @@ class neural_net(object):
             total += np.sum(np.square(self.layers[i+1].get_weights()))
         return total
 
+    def computeNumericalGradient(self, X, y):
+        paramsInitial = self.layer[1].get_weights()
+        numgrad = np.zeros(paramsInitial.shape)
+        perturb = np.zeros(paramsInitial.shape)
+        e = 1e-4
+
+        for p in range(self.weights.shape[0]):
+            for q in range(self.weights[p].shape[0]):
+                #Set perturbation vector
+                perturb[p,q] = e
+                self.weights += perturb
+                loss2 = N.costFunction(X, y)
+                
+                N.setParams(paramsInitial - perturb)
+                loss1 = N.costFunction(X, y)
+
+                #Compute Numerical Gradient
+                numgrad[p] = (loss2 - loss1) / (2*e)
+
+                #Return the value we changed to zero:
+                perturb[p] = 0
+            
+        #Return Params to original value:
+        N.setParams(paramsInitial)
+
+        return numgrad
+
     def train(self, train_input, train_label, epoch, batch_size):
         learning_rate = 0.001
         for i in range(epoch):
-            print("forward", self.forward_function(train_input))
+            print("forward", self.forward_function(train_input)[0:16])
             # self.forward_function(train_input)
             self.calculate_loss(train_label)
             print("epoch: {} loss: {}".format(i, \
@@ -184,19 +231,21 @@ class neural_net(object):
                 result = self.forward_function(train_input[begin:end])
 
                 # print("batch", j, "forward", result)
-                # print("softmax resilt", self.softmax_result[:,0:6])
+                # if j == 0:
+                #     print("softmax result", self.softmax_result[:,0:6])
+                # print("regularization", self.regularization())
                 self.backprop(train_label[begin:end], learning_rate)
         # delta_y = self.forward(train_input) - train_output
         self.forward_function(train_input)
         self.calculate_loss(train_label)
         print("average loss: ", np.average(self.loss))
 
-    # def save_weights(self, name):
-    #     with open(os.path.join(PATH, "models", "model_"+name+".json"), 'w') as weight_file:
-    #         weight_list = []
-    #         for i in range(self.num_layers-1):
-    #             weight_list.append(self.weights[i].tolist())
-    #         json.dump(weight_list, weight_file, indent=4)
+    def save_weights(self, name):
+        with open(os.path.join(PATH, "models", "model_"+name+".json"), 'w') as weight_file:
+            weight_list = []
+            for i in range(len(self.layers)-1):
+                weight_list.append(self.layers[i+1].get_weights().tolist())
+            json.dump(weight_list, weight_file, indent=4)
 
     # def load_weights(self, name, prefix="model_"):
     #     with open(os.path.join(PATH, "models", prefix+name+".json")) as weight_file:
@@ -229,7 +278,7 @@ with open(testFile, 'r') as test_data:
     testY = np.reshape(testY, (-1, 1))
 
 # train the nn
-nn = neural_net()
+nn = neural_net(hidden_layers=[500, 100, 50])
 # print("shape of trainX: ", trainX.shape)
 # print("shape of trainY: ", trainY.shape)
 # print("shape of testX: ", testX.shape)
@@ -241,7 +290,7 @@ testX = testX / 8
 
 # print(trainX[5])
 
-nn.train(trainX, trainY, 1000, 100)
+nn.train(trainX, trainY, 100, 100)
 # nn.load_weights("test0")
 
 # plt.imshow(np.reshape(trainX[5], (8,8)))
@@ -268,4 +317,4 @@ def show_forward(ann, test_input, test_output, sample_size):
     plt.show()
 
 show_forward(nn, testX, testY, 5)
-# nn.save_weights("test0")
+nn.save_weights("test1")

@@ -12,15 +12,15 @@ using namespace std;
 
 struct sample{
     string code;
-    int value;
-    int eval;
+    long long int value;
+    double eval;
 };
 
 void show_samples(vector<sample> samples_in, ofstream& out);
 
-int to_int(string sample_in);
+long long int to_int(string sample_in);
 
-int evaluate(int value_in);
+long long int evaluate(long long int value_in);
 
 void sort_samples(vector<sample>& samples_in);
 

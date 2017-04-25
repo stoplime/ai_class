@@ -83,9 +83,10 @@ class nn_layer(object):
             # np.dot(self.activation_prime, weights_nobias.T)
 
             dw = np.dot(self.input_bias.T, self.gradient)
-            self.weights = self.weights + dw * learning_rate
 
             self.gradient = np.dot(self.gradient, weights_nobias.T)
+
+            self.weights = self.weights + dw * learning_rate
     
     def get_node_output(self):
         return self.node_output
@@ -120,9 +121,9 @@ class neural_net(object):
             self.layers[i].forward(input_a)
             input_a = self.layers[i].get_node_output()
         # softmax
-        self.softmax_result = self.softmax(input_a)
+        # self.softmax_result = self.softmax(input_a)
         # sigmoid
-        # self.softmax_result = input_a
+        self.softmax_result = input_a
 
         max_index = self.softmax_result.argmax(axis=1)
         # max_index.shape = (# images,)
@@ -149,14 +150,14 @@ class neural_net(object):
         self.calculate_loss(label_y)
 
         # set gradient starting with the loss relative to softmax
-        self.gradient = -1/self.softmax_result
+        # self.gradient = -1/self.softmax_result
         # derivative of softmax
-        self.gradient = self.gradient * self.softmax_prime(label_y, self.correct_softmax)
+        # self.gradient = self.gradient * self.softmax_prime(label_y, self.correct_softmax)
 
-        # goal = np.zeros((label_y.shape[0], 10))
-        # goal[np.arange(label_y.shape[0]), label_y[:, 0]] = 1
+        goal = np.zeros((label_y.shape[0], 10))
+        goal[np.arange(label_y.shape[0]), label_y[:, 0]] = 1
 
-        # self.gradient = goal - self.softmax_result
+        self.gradient = goal - self.softmax_result
 
         # self.gradient.shape = (# images, output_size)
         for i in reversed(range(len(self.layers)-1)):
@@ -191,7 +192,8 @@ class neural_net(object):
             self.calculate_loss(train_label)
             print("epoch: {} loss: {}".format(i, np.average(self.loss)), end='\r')
             max_size = train_input.shape[0]
-            batch_data = np.random.permutation(train_input)
+            # batch_data = np.random.permutation(train_input)
+            batch_data = train_input
             for j in range(ceil(max_size / batch_size)):
                 begin = batch_size*j
                 end = batch_size*(j+1)
@@ -262,7 +264,7 @@ testX = testX / 8
 
 # print(trainX[5])
 
-nn.train(trainX, trainY, 500, 100)
+nn.train(trainX, trainY, 100, 100)
 # nn.load_weights("test0")
 
 # plt.imshow(np.reshape(trainX[5], (8,8)))

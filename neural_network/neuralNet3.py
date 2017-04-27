@@ -1,10 +1,14 @@
-
+# Neural Net V3 on NIST dataset
+# by Steffen Lim
+# runs on Python3
 
 import json
 import os
 import random
 from math import ceil
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 
 import numpy as np
 
@@ -57,15 +61,6 @@ class nn_layer(object):
         else:
             self.node_output = input_x
 
-    def calculate_loss(self, label_y):
-        if label_y.ndim == 1:
-            label_y = label_y.reshape((label_y.shape[0], 1))
-
-        self.correct_softmax = self.softmax_result[np.arange(label_y.shape[0]), label_y[:, 0]]
-        # print("self.correct_softmax", self.correct_softmax[10])
-        self.loss = -np.log(self.correct_softmax) #+ self.regularization()
-        # print("weights", self.layers[1].get_weights()[15,5])
-
     def backward(self, derivative, learning_rate):
         # derivative is the next layer's gradients
         # derivative.shape = (# images, output_dim)
@@ -79,13 +74,8 @@ class nn_layer(object):
             # print("weights_nobias", weights_nobias.shape)
 
             self.gradient = derivative * self.activation_prime
-            # self.gradient *= derivative
-            # np.dot(self.activation_prime, weights_nobias.T)
-
             dw = np.dot(self.input_bias.T, self.gradient)
-
             self.gradient = np.dot(self.gradient, weights_nobias.T)
-
             self.weights = self.weights + dw * learning_rate
     
     def get_node_output(self):
@@ -96,8 +86,10 @@ class nn_layer(object):
 
     def get_weights(self):
         return self.weights
-        
     
+    def set_weights(self, weights):
+        if weights.shape == self.weights.shape:
+            self.weights = weights
 
 class neural_net(object):
     def __init__(self, hidden_layers=[32]):
@@ -111,8 +103,6 @@ class neural_net(object):
         self.layers = [nn_layer(self.input_size)]
         for i in range(len(layer_dims)-1):
             self.layers.append(nn_layer(layer_dims[i+1], input_dim=layer_dims[i]))
-        # Set last layer to softmax (linear)
-        # self.layers[len(self.layers)-1].set_activation(type="linear")
 
     def forward_function(self, input_x):
         input_a = input_x
@@ -120,12 +110,9 @@ class neural_net(object):
         for i in range(len(self.layers)):
             self.layers[i].forward(input_a)
             input_a = self.layers[i].get_node_output()
-        # softmax
-        # self.softmax_result = self.softmax(input_a)
-        # sigmoid
-        self.softmax_result = input_a
+        self.result = input_a
 
-        max_index = self.softmax_result.argmax(axis=1)
+        max_index = self.result.argmax(axis=1)
         # max_index.shape = (# images,)
         return max_index
 
@@ -133,66 +120,50 @@ class neural_net(object):
         if label_y.ndim == 1:
             label_y = label_y.reshape((label_y.shape[0], 1))
 
-        self.correct_softmax = self.softmax_result[np.arange(label_y.shape[0]), label_y[:, 0]]
+        self.correct_results = self.result[np.arange(label_y.shape[0]), label_y[:, 0]]
         goal = np.zeros((label_y.shape[0], 10))
         goal[np.arange(label_y.shape[0]), label_y[:, 0]] = 1
-        # print("self.correct_softmax", self.correct_softmax[10])
-        self.loss = -np.log(self.correct_softmax)# + self.regularization()
-        # self.loss = np.mean(np.square(goal - self.softmax_result))
-
-        # print("weights", self.layers[1].get_weights()[15,5])
+        # print("self.correct_results", self.correct_results[10])
+        self.loss = -np.log(self.correct_results)
 
     def backprop(self, label_y, learning_rate):
         if label_y.ndim == 1:
             label_y = label_y.reshape((label_y.shape[0], 1))
-        # self.softmax_result.shape = (# images, output_dim)
-        # self.correct_softmax.shape = (# images,)
+        # self.result.shape = (# images, output_dim)
+        # self.correct_results.shape = (# images,)
         self.calculate_loss(label_y)
-
-        # set gradient starting with the loss relative to softmax
-        # self.gradient = -1/self.softmax_result
-        # derivative of softmax
-        # self.gradient = self.gradient * self.softmax_prime(label_y, self.correct_softmax)
 
         goal = np.zeros((label_y.shape[0], 10))
         goal[np.arange(label_y.shape[0]), label_y[:, 0]] = 1
 
-        self.gradient = goal - self.softmax_result
+        self.gradient = goal - self.result
 
         # self.gradient.shape = (# images, output_size)
         for i in reversed(range(len(self.layers)-1)):
             self.layers[i+1].backward(self.gradient, learning_rate)
             self.gradient = self.layers[i+1].get_gradient()
 
-    def softmax(self, input_z):
-        # input_z.shape = (# images, output_size)
-        # print("softmax denom", np.sum(input_z)) 
-        # input_z is going far into the negatives
-        return np.exp(input_z)/np.sum(np.exp(input_z))
-
-    def softmax_prime(self, label_y, correct_softmax):
-        if correct_softmax.ndim == 1:
-            correct_softmax = correct_softmax.reshape((correct_softmax.shape[0], 1))
-        d_softmax = -(np.exp(correct_softmax)*np.exp(self.softmax_result))/np.square(np.sum(np.exp(self.softmax_result)))
-        d_softmax_correct = correct_softmax*(1-correct_softmax)
-        d_softmax[np.arange(label_y.shape[0]), label_y[:, 0]] = d_softmax_correct[0]
-        return d_softmax
-
-    def regularization(self):
-        total = 0
-        for i in range(len(self.layers)-1):
-            total += np.sum(np.square(self.layers[i+1].get_weights()))
-        return total
-
-    def train(self, train_input, train_label, epoch, batch_size):
+    def train(self, train_input, train_label, test_in, test_label, epoch, batch_size):
         learning_rate = 0.001
+        self.loss_overtime = []
+        self.test_loss = []
+        self.accuracy_overtime = []
         for i in range(epoch):
-            print("forward", self.forward_function(train_input)[0:16])
-            # self.forward_function(train_input)
+            # calculate the train loss and accuracy
+            results = self.forward_function(train_input)
+            print("forward", results[0:16])
             self.calculate_loss(train_label)
             print("epoch: {} loss: {}".format(i, np.average(self.loss)), end='\r')
+            self.loss_overtime.append(np.average(self.loss))
+            correct = np.sum(np.where(results==train_label.reshape(train_label.shape[0]), np.ones(results.shape), np.zeros(results.shape)))
+            self.accuracy_overtime.append(correct/train_label.shape[0])
+            # calculate the test loss
+            test_result = self.forward_function(test_in)
+            self.calculate_loss(test_label)
+            self.test_loss.append(np.average(self.loss))
+
+            # run batches
             max_size = train_input.shape[0]
-            # batch_data = np.random.permutation(train_input)
             batch_data = train_input
             for j in range(ceil(max_size / batch_size)):
                 begin = batch_size*j
@@ -200,19 +171,19 @@ class neural_net(object):
                 if end > max_size:
                     end = max_size
                 result = self.forward_function(batch_data[begin:end])
-
-                # print("batch", j, "forward", result)
-                # if j == 0:
-                #     print("softmax result", self.softmax_result[:,0:6])
-                # print("regularization", self.regularization())
                 self.backprop(train_label[begin:end], learning_rate)
-            # learning_rate *= 0.99
-        # delta_y = self.forward(train_input) - train_output
+        # final check of train loss and accuracy
         results = self.forward_function(train_input)
         self.calculate_loss(train_label)
+        self.loss_overtime.append(np.average(self.loss))
         print("average loss: ", np.average(self.loss))
         correct = np.sum(np.where(results==train_label.reshape(train_label.shape[0]), np.ones(results.shape), np.zeros(results.shape)))
-        print("test accuracy: ", correct/train_label.shape[0])
+        self.accuracy_overtime.append(correct/train_label.shape[0])
+        print("train accuracy: ", correct/train_label.shape[0])
+
+        test_result = self.forward_function(test_in)
+        self.calculate_loss(test_label)
+        self.test_loss.append(np.average(self.loss))
         
     def save_weights(self, name):
         with open(os.path.join(PATH, "models", "model_"+name+".json"), 'w') as weight_file:
@@ -221,11 +192,18 @@ class neural_net(object):
                 weight_list.append(self.layers[i+1].get_weights().tolist())
             json.dump(weight_list, weight_file, indent=4)
 
-    # def load_weights(self, name, prefix="model_"):
-    #     with open(os.path.join(PATH, "models", prefix+name+".json")) as weight_file:
-    #         weight_list = json.load(weight_file)
-    #         for i in range(self.num_layers-1):
-    #             self.weights[i] = np.asarray(weight_list[i])
+    def load_weights(self, name, prefix="model_"):
+        with open(os.path.join(PATH, "models", prefix+name+".json")) as weight_file:
+            weight_list = json.load(weight_file)
+            for i in range(len(self.layers)-1):
+                self.layers[i+1].set_weights(np.asarray(weight_list[i]))
+
+    def get_overtime(self):
+        # print(len(self.loss_overtime))
+        return self.loss_overtime, self.accuracy_overtime
+    
+    def get_test_loss(self):
+        return self.test_loss
 
 '''
 Grabs the data and runs any preprocessing
@@ -252,11 +230,8 @@ with open(testFile, 'r') as test_data:
     testY = np.reshape(testY, (-1, 1))
 
 # train the nn
-nn = neural_net(hidden_layers=[64, 16])
-# print("shape of trainX: ", trainX.shape)
-# print("shape of trainY: ", trainY.shape)
-# print("shape of testX: ", testX.shape)
-# print("shape of testY: ", testY.shape)
+nn = neural_net(hidden_layers=[128, 128, 128, 32])
+# Normalizing the data
 trainX -= 8
 trainX = trainX / 8
 testX -= 8
@@ -264,8 +239,8 @@ testX = testX / 8
 
 # print(trainX[5])
 
-nn.train(trainX, trainY, 100, 100)
-# nn.load_weights("test0")
+nn.train(trainX, trainY, testX, testY, 2000, 50)
+# nn.load_weights("test15")
 
 # plt.imshow(np.reshape(trainX[5], (8,8)))
 # plt.show()
@@ -290,5 +265,43 @@ def show_forward(ann, test_input, test_output, sample_size):
         plt.imshow(np.reshape(test_input[i], (8,8)))
     plt.show()
 
+    blue_patch = mpatches.Patch(color='blue', label='train loss')
+    orange_patch = mpatches.Patch(color='orange', label='test loss')
+    plt.legend(handles=[blue_patch, orange_patch])
+    # plot_loss = fig.add_subplot(111)
+    loss, accu = ann.get_overtime()
+    test_loss = ann.get_test_loss()
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.plot(np.arange(len(loss)), loss, np.arange(len(test_loss)), test_loss)
+    plt.show()
+
 show_forward(nn, testX, testY, 10)
-nn.save_weights("test2")
+nn.save_weights("test17")
+
+'''
+test2: the first working nn, 500 epochs, h-layers [64, 16], acc: 0.83
+test3: set up using 2000 epochs,            acc: 0.955
+test4: set up using 8000 epochs,            acc: 0.974958263773
+test5: 2000 epochs, h-layer [64, 32, 16],   acc: 0.960489705064
+test6: 2000 epochs, h-layer [64, 16, 16],   acc: 0.960489705064
+test7: 2000 epochs, h-layer [128, 16, 16],  acc: 0.968280467446
+test8: 2000 epochs, h-layer [128, 32, 16],  acc: 0.965498052309
+test9: 2000 epochs, h-layer [96, 16, 16],   acc: 0.959933222037
+test10: 2000 epochs, h-layer [96, 32, 16],  acc: 0.959933222037
+test11: 2000 epochs, h-layer [128, 16],     acc: 0.967723984418
+test12: 2000 epochs, h-layer [128, 32],     acc: 0.971619365609
+test13: 2000 epochs, h-layer [128, 64],     acc: 0.969949916528
+
+test14: 200 epochs, h-layer [128, 32], Zero-centered Normalized Data  acc: 0.944351697273
+test14: 200 epochs, h-layer [128, 32], Non-zero-centered Unormalized Data  acc: 0.927657206455
+test14: 200 epochs, h-layer [128, 32], Zero-centered Unormalized Data  acc: 0.918196994992
+test14: 200 epochs, h-layer [128, 32], Non-Zero-centered Normalized Data  acc: 0.936560934891
+
+test15: 200 epochs, h-layer [128, 32], Non-Zero-centered Normalize1d Data, figure 1 & 2
+test16: 8000 epochs, h-layer [128, 32], figure_3, acc: 0.972732331664
+
+test17: 2000 epochs, h-layer [128, 128, 128, 32], acc: 0.967167501391
+
+'''
+

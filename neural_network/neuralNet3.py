@@ -24,7 +24,7 @@ class nn_layer(object):
         if initial_weights != None:
             self.weights = initial_weights
         elif input_dim != None:
-            self.weights = 2*np.random.rand(input_dim + 1, output_dim) -1
+            self.weights = 2*np.random.rand(input_dim + 1, output_dim) *0.001
         else:
             self.has_weights = False
             self.weights = None
@@ -229,22 +229,6 @@ with open(testFile, 'r') as test_data:
     testY = np.transpose(np.asarray(data)[:,-1:])[0]
     testY = np.reshape(testY, (-1, 1))
 
-# train the nn
-nn = neural_net(hidden_layers=[128, 128, 128, 32])
-# Normalizing the data
-trainX -= 8
-trainX = trainX / 8
-testX -= 8
-testX = testX / 8
-
-# print(trainX[5])
-
-nn.train(trainX, trainY, testX, testY, 2000, 50)
-# nn.load_weights("test15")
-
-# plt.imshow(np.reshape(trainX[5], (8,8)))
-# plt.show()
-
 def show_forward(ann, test_input, test_output, sample_size):
     fig = plt.figure()
     # fig.subtitle("Random samples from forward pass of the Test data", fontsize=16)
@@ -276,8 +260,24 @@ def show_forward(ann, test_input, test_output, sample_size):
     plt.plot(np.arange(len(loss)), loss, np.arange(len(test_loss)), test_loss)
     plt.show()
 
+# train the nn
+nn = neural_net(hidden_layers=[128, 32])
+# Normalizing the data
+trainX -= 8
+trainX = trainX / 8
+testX -= 8
+testX = testX / 8
+
+# print(trainX[5])
+
+# nn.train(trainX, trainY, testX, testY, 100, 50)
+nn.load_weights("test17")
+
+# plt.imshow(np.reshape(trainX[5], (8,8)))
+# plt.show()
+
 show_forward(nn, testX, testY, 10)
-nn.save_weights("test17")
+# nn.save_weights("test17")
 
 '''
 test2: the first working nn, 500 epochs, h-layers [64, 16], acc: 0.83

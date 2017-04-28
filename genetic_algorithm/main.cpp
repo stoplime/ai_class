@@ -15,24 +15,24 @@ generalize the function f(x)=x^2
 
 */
 
-int run = 4;
+int run = 6;
 
 int candidates = 18;
 int candidate_size = 42;
 float keep = 0.5;
 float mutation_rate = 0.2;
-int epoch = 10000;
+int epoch = 1000;
 
-sample best;
+sample global_best;
 
 int main()
 {
     srand(time(NULL));
     cout << "genetic algorithm" << endl;
 
-    best.code = "";
-    best.value = 0;
-    best.eval = -1.0e+100;
+    global_best.code = "";
+    global_best.value = 0;
+    global_best.eval = -1.0e+100;
 
     //generate samples
     vector<sample> samples;
@@ -62,6 +62,11 @@ int main()
     ofstream out;
     out.open("/home/stoplime/ai_class/genetic_algorithm/test_runs/run"+to_string(run)+".txt");
     for(int i=0; i < epoch; i++){
+        sample epoch_best;
+        epoch_best.code = "";
+        epoch_best.value = 0;
+        epoch_best.eval = -1.0e+100;
+
         // out << "Sorted samples: "<< endl;
         sort_samples(samples);
         // show_samples(samples, out);
@@ -75,11 +80,14 @@ int main()
         // show_samples(samples, out);
         // out << "Best fit so far: "<< endl;
         for(size_t j=0; j < samples.size(); j++){
-            if(best.eval < samples[j].eval){
-                best = samples[j];
+            if(global_best.eval < samples[j].eval){
+                global_best = samples[j];
+            }
+            if(epoch_best.eval < samples[j].eval){
+                epoch_best = samples[j];
             }
         }
-        // out << "Sample best: \t\t\t\t" << best.code << "\t" << best.value << "\t" << best.eval << endl;
+        // out << "Sample best: \t\t\t\t" << global_best.code << "\t" << global_best.value << "\t" << global_best.eval << endl;
 
         // out << "Average fit: "<< endl;
         float average = 0;
@@ -88,12 +96,13 @@ int main()
         }
         average /= samples.size();
         // out << "Eval: \t\t\t\t\t\t\t" << i << "\t" << average << endl;
-        out << "Best @" << i << ": \t" << best.value << "\t" << best.eval << "\t" << average;
-        // cout << "Best @" << i << ": \t" << best.value << "\t" << best.eval << "\t" << average << endl;
+        out << "Best @" << i << ": \t" << epoch_best.value << "\t" << epoch_best.eval << "\t" << global_best.value << "\t" << global_best.eval << "\t" << average;
+        // cout << "Best @" << i << ": \t" << global_best.value << "\t" << global_best.eval << "\t" << average << endl;
 
         out << endl;
     }
     out.close();
+    cout << "Done: run"+to_string(run)+".txt" << endl;
 }
 
 long long int evaluate(long long int value_in)

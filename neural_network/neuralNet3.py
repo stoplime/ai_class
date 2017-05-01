@@ -16,7 +16,7 @@ PATH = os.getcwd()
 trainFile = os.path.join(PATH, "optdigits_train.txt")
 testFile = os.path.join(PATH, "optdigits_test.txt")
 
-np.random.seed(1)
+# np.random.seed(1)
 
 class nn_layer(object):
     def __init__(self, output_dim, input_dim=None, initial_weights=None):
@@ -24,7 +24,7 @@ class nn_layer(object):
         if initial_weights != None:
             self.weights = initial_weights
         elif input_dim != None:
-            self.weights = 2*np.random.rand(input_dim + 1, output_dim) *0.001
+            self.weights = 2*np.random.rand(input_dim + 1, output_dim) - 1
         else:
             self.has_weights = False
             self.weights = None
@@ -151,7 +151,7 @@ class neural_net(object):
         for i in range(epoch):
             # calculate the train loss and accuracy
             results = self.forward_function(train_input)
-            print("forward", results[0:16])
+            # print("forward", results[0:16])
             self.calculate_loss(train_label)
             print("epoch: {} loss: {}".format(i, np.average(self.loss)), end='\r')
             self.loss_overtime.append(np.average(self.loss))
@@ -229,7 +229,7 @@ with open(testFile, 'r') as test_data:
     testY = np.transpose(np.asarray(data)[:,-1:])[0]
     testY = np.reshape(testY, (-1, 1))
 
-def show_forward(ann, test_input, test_output, sample_size):
+def show_forward(ann, test_input, test_output, sample_size, save):
     fig = plt.figure()
     # fig.subtitle("Random samples from forward pass of the Test data", fontsize=16)
     fig.set_figwidth(sample_size)
@@ -247,7 +247,7 @@ def show_forward(ann, test_input, test_output, sample_size):
         plot.set_title(temp)
         # print(test_input[samples[i]].shape)
         plt.imshow(np.reshape(test_input[i], (8,8)))
-    plt.show()
+    # plt.show()
 
     blue_patch = mpatches.Patch(color='blue', label='train loss')
     orange_patch = mpatches.Patch(color='orange', label='test loss')
@@ -258,26 +258,25 @@ def show_forward(ann, test_input, test_output, sample_size):
     plt.xlabel('epoch')
     plt.ylabel('loss')
     plt.plot(np.arange(len(loss)), loss, np.arange(len(test_loss)), test_loss)
-    plt.show()
+    # plt.show()
+    plt.savefig(os.path.join(PATH, "figures", "figure_"+save+".png"))
 
 # train the nn
 nn = neural_net(hidden_layers=[128, 32])
 # Normalizing the data
-trainX -= 8
-trainX = trainX / 8
-testX -= 8
-testX = testX / 8
+# trainX -= 8
+# testX -= 8
+# trainX = trainX / 8
+# testX = testX / 8
+# trainX = trainX / 16
+# testX = testX / 16
 
-# print(trainX[5])
 
-# nn.train(trainX, trainY, testX, testY, 100, 50)
-nn.load_weights("test17")
+nn.train(trainX, trainY, testX, testY, 200, 50)
+# nn.load_weights("")
 
-# plt.imshow(np.reshape(trainX[5], (8,8)))
-# plt.show()
-
+nn.save_weights("w0u0n0z0_200_0")
 show_forward(nn, testX, testY, 10)
-# nn.save_weights("test17")
 
 '''
 test2: the first working nn, 500 epochs, h-layers [64, 16], acc: 0.83
@@ -305,3 +304,23 @@ test17: 2000 epochs, h-layer [128, 128, 128, 32], acc: 0.967167501391
 
 '''
 
+for w in range(2):
+    for u in range(2):
+        for z in range(2):
+            if z == 0:
+                train_in = trainX - 8
+                test_in = testX - 8
+            else:
+                train_in = trainX
+                test_in = testX
+            for n in range(2):
+                if n == 0:
+                    if z == 0:
+                        train_in = train_in/8
+                        test_in = test_in/8
+                    else:
+                        train_in = train_in/16
+                        test_in = test_in/16
+                for epoch_index, epoch_type in enumerate([200, 500, 1000]):
+                    for a in range(3):
+                        nn = neural_net(hidden_layers=[128, 32])

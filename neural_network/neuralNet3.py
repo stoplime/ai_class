@@ -19,12 +19,16 @@ testFile = os.path.join(PATH, "optdigits_test.txt")
 # np.random.seed(1)
 
 class nn_layer(object):
-    def __init__(self, output_dim, input_dim=None, initial_weights=None):
+    def __init__(self, output_dim, input_dim=None, initial_weights=None, initial_random=0, update_type=0):
         self.has_weights = True
+        self.update_type = update_type
         if initial_weights != None:
             self.weights = initial_weights
         elif input_dim != None:
-            self.weights = 2*np.random.rand(input_dim + 1, output_dim) - 1
+            if initial_random == 0:
+                self.weights = 2*np.random.rand(input_dim + 1, output_dim) - 1
+            else:
+                self.weights = np.random.rand(input_dim + 1, output_dim) * 0.001
         else:
             self.has_weights = False
             self.weights = None
@@ -76,7 +80,10 @@ class nn_layer(object):
             self.gradient = derivative * self.activation_prime
             dw = np.dot(self.input_bias.T, self.gradient)
             self.gradient = np.dot(self.gradient, weights_nobias.T)
-            self.weights = self.weights + dw * learning_rate
+            if self.update_type == 0:
+                self.weights = self.weights + dw * learning_rate
+            else:
+                self.weights += self.weights * dw * learning_rate
     
     def get_node_output(self):
         return self.node_output
@@ -92,7 +99,7 @@ class nn_layer(object):
             self.weights = weights
 
 class neural_net(object):
-    def __init__(self, hidden_layers=[32]):
+    def __init__(self, hidden_layers=[32], initial_random=0, update_type=0):
         self.input_size = 64
         self.output_size = 10
         layer_dims = [self.input_size]
@@ -100,9 +107,9 @@ class neural_net(object):
             layer_dims.append(hidden_layers[i])
         layer_dims.append(self.output_size)
 
-        self.layers = [nn_layer(self.input_size)]
+        self.layers = [nn_layer(self.input_size, initial_random=initial_random, update_type=update_type)]
         for i in range(len(layer_dims)-1):
-            self.layers.append(nn_layer(layer_dims[i+1], input_dim=layer_dims[i]))
+            self.layers.append(nn_layer(layer_dims[i+1], input_dim=layer_dims[i], initial_random=initial_random, update_type=update_type))
 
     def forward_function(self, input_x):
         input_a = input_x
@@ -232,6 +239,7 @@ with open(testFile, 'r') as test_data:
 def show_forward(ann, test_input, test_output, sample_size, save):
     fig = plt.figure()
     # fig.subtitle("Random samples from forward pass of the Test data", fontsize=16)
+    
     fig.set_figwidth(sample_size)
     results = ann.forward_function(test_input)
     samples = random.sample(range(len(test_input)), sample_size)
@@ -240,6 +248,7 @@ def show_forward(ann, test_input, test_output, sample_size, save):
     correct = np.sum(np.where(results==test_output.reshape(test_output.shape[0]), np.ones(results.shape), np.zeros(results.shape)))
     # print("correct: ",correct.shape)
     print("test accuracy: ", correct/test_output.shape[0])
+    '''
     for i in range(sample_size):
         plot = plt.subplot(1,sample_size,i+1)
         temp = "P: "+str(results[i]) #+", GT: "+str(test_output[i][0])
@@ -247,7 +256,8 @@ def show_forward(ann, test_input, test_output, sample_size, save):
         plot.set_title(temp)
         # print(test_input[samples[i]].shape)
         plt.imshow(np.reshape(test_input[i], (8,8)))
-    # plt.show()
+    plt.show()
+    '''
 
     blue_patch = mpatches.Patch(color='blue', label='train loss')
     orange_patch = mpatches.Patch(color='orange', label='test loss')
@@ -262,7 +272,8 @@ def show_forward(ann, test_input, test_output, sample_size, save):
     plt.savefig(os.path.join(PATH, "figures", "figure_"+save+".png"))
 
 # train the nn
-nn = neural_net(hidden_layers=[128, 32])
+# nn = neural_net(hidden_layers=[128, 32])
+
 # Normalizing the data
 # trainX -= 8
 # testX -= 8
@@ -272,11 +283,11 @@ nn = neural_net(hidden_layers=[128, 32])
 # testX = testX / 16
 
 
-nn.train(trainX, trainY, testX, testY, 200, 50)
+# nn.train(trainX, trainY, testX, testY, 200, 50)
 # nn.load_weights("")
 
-nn.save_weights("w0u0n0z0_200_0")
-show_forward(nn, testX, testY, 10)
+# nn.save_weights("w0u0n0z0_200_0")
+# show_forward(nn, testX, testY, 10, '5')
 
 '''
 test2: the first working nn, 500 epochs, h-layers [64, 16], acc: 0.83
@@ -303,9 +314,11 @@ test16: 8000 epochs, h-layer [128, 32], figure_3, acc: 0.972732331664
 test17: 2000 epochs, h-layer [128, 128, 128, 32], acc: 0.967167501391
 
 '''
-
+# weight initialization type 0 = -1 to 1, 1 = 0 to 0.001
 for w in range(2):
+    # weight update type 0 = (w = w + dw * l), 1 = (w = w + w * dw * l)
     for u in range(2):
+        # zero-centered 0 = true, 1 = false
         for z in range(2):
             if z == 0:
                 train_in = trainX - 8
@@ -313,6 +326,7 @@ for w in range(2):
             else:
                 train_in = trainX
                 test_in = testX
+            # normalized 0 = true, 1 = false
             for n in range(2):
                 if n == 0:
                     if z == 0:
@@ -321,6 +335,15 @@ for w in range(2):
                     else:
                         train_in = train_in/16
                         test_in = test_in/16
+                # three different sets of epochs
                 for epoch_index, epoch_type in enumerate([200, 500, 1000]):
+                    # runs on three models and we average later
                     for a in range(3):
-                        nn = neural_net(hidden_layers=[128, 32])
+                        save_name = "w"+str(w)+"u"+str(u)+"n"+str(n)+"z"+str(z)+"_"+str(epoch_type)+"_"+str(a)
+                        print(save_name)
+                        nn = neural_net(hidden_layers=[128, 32], initial_random=w, update_type=u)
+                        nn.train(trainX, trainY, testX, testY, epoch_type, 50)
+                        nn.save_weights(save_name)
+                        show_forward(nn, testX, testY, 10, save=save_name)
+                        print()
+

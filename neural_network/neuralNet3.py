@@ -39,7 +39,7 @@ class nn_layer(object):
         
     def activation(self, input_z):
         if self.activation_type == 'linear':
-            self.node_output = input_z
+            self.node_output = input_zwilsonbiologylab
         else:
             # default to sigmoid
             self.node_output = 1/(1+np.exp(-input_z))
@@ -247,7 +247,7 @@ def show_forward(ann, test_input, test_output, sample_size, save):
     # print ("predict:", test_output.shape[0])
     correct = np.sum(np.where(results==test_output.reshape(test_output.shape[0]), np.ones(results.shape), np.zeros(results.shape)))
     # print("correct: ",correct.shape)
-    print("test accuracy: ", correct/test_output.shape[0])
+    print("test accuracy: \t\t\t\t", correct/test_output.shape[0])
     '''
     for i in range(sample_size):
         plot = plt.subplot(1,sample_size,i+1)
@@ -314,36 +314,34 @@ test16: 8000 epochs, h-layer [128, 32], figure_3, acc: 0.972732331664
 test17: 2000 epochs, h-layer [128, 128, 128, 32], acc: 0.967167501391
 
 '''
-# weight initialization type 0 = -1 to 1, 1 = 0 to 0.001
-for w in range(2):
-    # weight update type 0 = (w = w + dw * l), 1 = (w = w + w * dw * l)
-    for u in range(2):
-        # zero-centered 0 = true, 1 = false
-        for z in range(2):
+w = 0
+u = 0
+for z in reversed(range(2)):
+    if z == 0:
+        train_in = trainX - 8
+        test_in = testX - 8
+    else:
+        train_in = trainX
+        test_in = testX
+    # normalized 0 = true, 1 = false
+    for n in reversed(range(2)):
+        if n == 0:
             if z == 0:
-                train_in = trainX - 8
-                test_in = testX - 8
+                train_in = train_in/8
+                test_in = test_in/8
             else:
-                train_in = trainX
-                test_in = testX
-            # normalized 0 = true, 1 = false
-            for n in range(2):
-                if n == 0:
-                    if z == 0:
-                        train_in = train_in/8
-                        test_in = test_in/8
-                    else:
-                        train_in = train_in/16
-                        test_in = test_in/16
-                # three different sets of epochs
-                for epoch_index, epoch_type in enumerate([200, 500, 1000]):
-                    # runs on three models and we average later
-                    for a in range(3):
-                        save_name = "w"+str(w)+"u"+str(u)+"n"+str(n)+"z"+str(z)+"_"+str(epoch_type)+"_"+str(a)
-                        print(save_name)
-                        nn = neural_net(hidden_layers=[128, 32], initial_random=w, update_type=u)
-                        nn.train(trainX, trainY, testX, testY, epoch_type, 50)
-                        nn.save_weights(save_name)
-                        show_forward(nn, testX, testY, 10, save=save_name)
-                        print()
+                train_in = train_in/16
+                test_in = test_in/16
+        # three different sets of epochs
+        for epoch_index, epoch_type in enumerate([200, 500, 1000]):
+            # runs on three models and we average later
+            for a in range(10):
+                save_name = "n"+str(n)+"z"+str(z)+"_"+str(epoch_type)+"_"+str(a)
+                print_name = str(n) + "\t" + str(z) + "\t" + str(epoch_type) + "\t" + str(a)
+                print(print_name)
+                nn = neural_net(hidden_layers=[128, 32], initial_random=w, update_type=u)
+                nn.train(trainX, trainY, testX, testY, epoch_type, 50)
+                nn.save_weights(save_name)
+                show_forward(nn, testX, testY, 10, save=save_name)
+                print()
 

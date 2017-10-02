@@ -27,6 +27,7 @@ void sort_samples(vector<sample>& samples_in);
 void crossover(vector<sample>& samples_in);
 
 void mutate(vector<sample>& samples_in);
+void mutate_single(sample& samples_in);
 
 void run_evaluation(vector<sample>& samples_in);
 

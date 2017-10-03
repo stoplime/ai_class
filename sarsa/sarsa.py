@@ -22,7 +22,7 @@ class sarsa(object):
         self.eTable = np.zeros((gridSize[0]+1, gridSize[1]+1, 4))
         self.target = target
         self.currentState = (random.randint(0, self.gridWorld.shape[0]-2), random.randint(0, self.gridWorld.shape[1]-2))
-        self.gridWorld[target] = 1
+        self.gridWorld[target] = 5
 
         self.learningRate = 0.01
         self.decayRate = 0.999
@@ -30,7 +30,6 @@ class sarsa(object):
         self.exploreRatio = self.exploreRatioStart
         self.edecay = 0.1
 
-        print(type(target))
         # Create a grid of None to store the references to the tiles
         self.tiles = [[None for i in range(gridSize[0])] for j in range(gridSize[1])]
 
@@ -46,11 +45,7 @@ class sarsa(object):
         self.c.create_rectangle(target[0]*self.col_width, target[1]*self.row_height, (target[0]+1)*self.col_width, (target[1]+1)*self.row_height, fill="gold")
 
         root.mainloop()
-    
-    def l2_dist(a,b):
-        dist = sqrt((a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]))
-        return dist
-
+        
     def insert_walls(self, wall_locations=[]):
         for i in range(len(wall_locations)):
             if(wall_locations[i] != self.target):
@@ -138,7 +133,10 @@ class sarsa(object):
     def forward(self, init_state=None):
         path = []
         if init_state == None:
-            self.currentState = (random.randint(0, self.gridWorld.shape[0]-2), random.randint(0, self.gridWorld.shape[1]-2))
+            while True:
+                self.currentState = (random.randint(0, self.gridWorld.shape[0]-2), random.randint(0, self.gridWorld.shape[1]-2))
+                if self.gridWorld[self.currentState] != -1.0 and self.gridWorld[self.currentState] != 1.0:
+                    break
         else:
             self.currentState = init_state
         self.action = self.choose_action(custom_explore_ratio=0.2)
@@ -158,21 +156,28 @@ class sarsa(object):
             self.action = action_prime
         return reach_goal, path
 
-    def train(self, epoch):
+    def train(self, epoch, ):
         goal_count = 0
         pbar = ProgressBar(widgets=["epochs: ", Percentage(), " ",  Bar()], maxval=epoch).start()
         for ep in range(epoch):
             # initialize state and action
-            self.currentState = (random.randint(0, self.gridWorld.shape[0]-2), random.randint(0, self.gridWorld.shape[1]-2))
+            while True:
+                self.currentState = (random.randint(0, self.gridWorld.shape[0]-2), random.randint(0, self.gridWorld.shape[1]-2))
+                if self.gridWorld[self.currentState] != -1.0 and self.gridWorld[self.currentState] != 1.0:
+                    break
+
             self.action = self.choose_action()
             # loop till find gold
             pbar.update(ep)
             self.alive = True
+            steps = 1
             while(self.alive):
                 # self.draw_grid()
                 state_prime = self.apply_action()
                 reward = self.gridWorld[self.currentState]
                 r_prime = self.gridWorld[state_prime]
+                # if r_prime == 0:
+                    # r_prime = -0.04
                 if(self.gridWorld[state_prime] != 0):
                     if(state_prime == self.target):
                         goal_count += 1
@@ -186,7 +191,10 @@ class sarsa(object):
                 delta = r_prime + self.exploreRatio*self.qTable[prime_index] - self.qTable[current_index]
                 # delta = reward + r_prime*self.exploreRatio + self.exploreRatio*self.qTable[prime_index] - self.qTable[current_index]
                 self.eTable[current_index] = self.eTable[current_index] + 1
-                
+                steps += 1
+                if steps > 50:
+                    self.alive = False
+
                 # update q and e tables
                 self.qTable = self.qTable + self.learningRate * delta * self.eTable
                 self.eTable = self.eTable * self.exploreRatio * self.decayRate
@@ -194,8 +202,7 @@ class sarsa(object):
                 # update currentState and action
                 self.currentState = state_prime
                 self.action = action_prime
-            # self.exploreRatio = ((epoch-ep)/epoch) * (self.exploreRatioStart-self.edecay) + self.edecay
-            self.exploreRatio =  np.tanh(self.l2_dist(self.currentState,self.target)) * (self.exploreRatioStart-self.edecay ) + self.edecay
+            self.exploreRatio = ((epoch-ep)/epoch) * (self.exploreRatioStart-self.edecay) + self.edecay
             # print(self.exploreRatio)
         pbar.finish()
         # print("goal: ", goal_count)
